@@ -1,0 +1,14 @@
+{
+  "id": "36212a61-3ce0-4f08-8299-666e25c57c63",
+  "created": "2025-04-12T20:00:12.582216Z",
+  "redirect": "https://localhost:3000/consent-callback",
+  "status": "CR",
+  "institution_id": "ARBEJDERNES_LANDSBANK_ALBADKKK",
+  "agreement": "3e9399d9-75c1-44e2-884d-740fdd9f6c20",
+  "reference": "req-1744488012317",
+  "accounts": [],
+  "link": "https://ob.gocardless.com/ob-psd2/start/2dc85374-761e-4bf6-aa9b-4e1d2da30c08/ARBEJDERNES_LANDSBANK_ALBADKKK",
+  "ssn": null,
+  "account_selection": false,
+  "redirect_immediate": false
+}
