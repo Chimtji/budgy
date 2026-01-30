@@ -1,0 +1,402 @@
+{
+  "groceries": {
+    "color": "violet",
+    "id": "5d5102a7-7c1e-4685-b8e7-2ad2bdcf574a",
+    "label": "husholdning",
+    "image": "https://images.unsplash.com/photo-1628102491629-778571d893a3?q=80&w=2360&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    "icon": "IconShoppingBag",
+    "description": "Daglige udgifter til hjemmet",
+    "segments": {
+      "groceries": {
+        "id": "2a33f1c1-01a0-4e1f-a1e8-010",
+        "label": "Dagligvarer",
+        "description": "Indkøb af mad og daglige fornødenheder"
+      },
+      "takeaway": {
+        "id": "2a33f1c1-01a0-4e1f-a1e8-011",
+        "label": "Takeaway & Kantine",
+        "description": "Mad og drikke købt ude eller spist på arbejdet"
+      },
+      "speciality": {
+        "id": "2a33f1c1-01a0-4e1f-a1e8-015",
+        "label": "Kiosk, Bager & Specialbutikker",
+        "description": "Indkøb i kiosker, bagerier og specialbutikker"
+      },
+      "other": {
+        "id": "2a33f1c1-01a0-4e1f-a1e8-009",
+        "label": "Andet",
+        "description": "Husholdningsudgifter der ikke passer i øvrige segmenter"
+      }
+    }
+  },
+  "transport": {
+    "color": "indigo",
+    "id": "a1b2c3d4-0001-0000-0000-000000000001",
+    "label": "transport",
+    "image": "https://images.unsplash.com/photo-1490902931801-d6f80ca94fe4?q=80&w=2340&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    "icon": "IconCar",
+    "description": "udgifter til transportmidler og kørsel",
+    "segments": {
+      "fuel": {
+        "id": "3b52e8d2-21c0-4d3f-b2f1-001",
+        "label": "Brændstof",
+        "description": "Udgifter til benzin, diesel eller opladning"
+      },
+      "public": {
+        "id": "3b52e8d2-21c0-4d3f-b2f1-002",
+        "label": "Offentlig",
+        "description": "Transport med bus, tog, metro eller lignende"
+      },
+      "maintenance": {
+        "id": "3b52e8d2-21c0-4d3f-b2f1-003",
+        "label": "Vedligeholdelse",
+        "description": "Reparationer, service og bilvedligehold"
+      },
+      "parking": {
+        "id": "3b52e8d2-21c0-4d3f-b2f1-004",
+        "label": "Parkering",
+        "description": "Parkeringsafgifter og abonnementer"
+      },
+      "other": {
+        "id": "3b52e8d2-21c0-4d3f-b2f1-005",
+        "label": "Andet",
+        "description": "Transportudgifter der ikke passer i øvrige segmenter"
+      },
+      "insurance": {
+        "id": "3b52e8d2-21c0-4d3f-b2f1-006",
+        "label": "Forsikringer",
+        "description": "Bilforsikringer og andre transportrelaterede forsikringer"
+      },
+      "loan": {
+        "id": "3b52e8d2-21c0-4d3f-b2f1-007",
+        "label": "Billån",
+        "description": "Afdrag og renter på billån"
+      },
+      "fines": {
+        "id": "3b52e8d2-21c0-4d3f-b2f1-008",
+        "label": "Bøder & Afgifter",
+        "description": "Parkeringsbøder og andre transportrelaterede afgifter"
+      }
+    }
+  },
+  "experiencesAndLeisure": {
+    "color": "blue",
+    "id": "a1b2c3d4-0002-0000-0000-000000000002",
+    "label": "oplevelser & fritid",
+    "image": "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
+    "icon": "IconConfetti",
+    "description": "Underholdning, hobbyer og sociale aktiviteter",
+    "segments": {
+      "vacation": {
+        "id": "4c63f2d3-32d1-5e2g-c3g2-001",
+        "label": "Ferie",
+        "description": "Udgifter til rejser og ferieaktiviteter"
+      },
+      "insurance": {
+        "id": "4c63f2d3-32d1-5e2g-c3g2-002",
+        "label": "Forsikringer",
+        "description": "Rejseforsikringer og andre fritidsrelaterede forsikringer"
+      },
+      "other": {
+        "id": "4c63f2d3-32d1-5e2g-c3g2-003",
+        "label": "Andet",
+        "description": "Fritidsudgifter der ikke passer i øvrige segmenter"
+      },
+      "dining": {
+        "id": "4c63f2d3-32d1-5e2g-c3g2-004",
+        "label": "Bar, Café & Restaurant",
+        "description": "Udgifter til spisesteder og drikkevarer ude"
+      },
+      "software": {
+        "id": "4c63f2d3-32d1-5e2g-c3g2-005",
+        "label": "Online Tjenester & Software",
+        "description": "Abonnementer på online tjenester og software"
+      },
+      "streaming": {
+        "id": "4c63f2d3-32d1-5e2g-c3g2-006",
+        "label": "TV & Streaming",
+        "description": "Abonnementer på tv-kanaler og streamingtjenester"
+      },
+      "media": {
+        "id": "4c63f2d3-32d1-5e2g-c3g2-007",
+        "label": "Vinyl, Musik & Bøger",
+        "description": "Køb af musik, bøger og relaterede medier"
+      },
+      "gaming": {
+        "id": "4c63f2d3-32d1-5e2g-c3g2-008",
+        "label": "Gaming & Legetøj",
+        "description": "Udgifter til spil og legetøj"
+      },
+      "fitness": {
+        "id": "4c63f2d3-32d1-5e2g-c3g2-009",
+        "label": "Fitness & Sport",
+        "description": "Medlemskaber og udstyr til fitness og sport"
+      },
+      "hobby": {
+        "id": "4c63f2d3-32d1-5e2g-c3g2-010",
+        "label": "Hobby",
+        "description": "Udgifter til hobbyaktiviteter og materialer"
+      }
+    }
+  },
+  "celebrations": {
+    "color": "grape",
+    "id": "23c4e46d-ff01-4a7d-8806-69dc949fae4f",
+    "label": "Højtider & Fejringer",
+    "image": "https://images.unsplash.com/photo-1527529482837-4698179dc6ce?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    "icon": "IconConfetti",
+    "description": "Fejring af særlige begivenheder og højtider",
+    "segments": {
+      "birthdays": {
+        "id": "5d74g3e4-43e2-6f3h-d4h3-001",
+        "label": "Fødselsdage",
+        "description": "Udgifter til fødselsdagsfejringer og gaver"
+      },
+      "holidays": {
+        "id": "5d74g3e4-43e2-6f3h-d4h3-002",
+        "label": "Højtider & Begivenheder",
+        "description": "Udgifter til højtider og særlige begivenheder"
+      },
+      "other": {
+        "id": "5d74g3e4-43e2-6f3h-d4h3-003",
+        "label": "Andet",
+        "description": "Fejringsudgifter der ikke passer i øvrige segmenter"
+      }
+    }
+  },
+  "costOfLiving": {
+    "color": "green",
+    "id": "a1b2c3d4-0003-0000-0000-000000000003",
+    "label": "Leveomkostninger",
+    "image": "https://images.unsplash.com/photo-1599351430140-c70f0250bd70?q=80&w=2338&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    "icon": "IconReceipt",
+    "description": "Abonnementer, forsikringer og andre faste betalinger",
+    "segments": {
+      "grooming": {
+        "id": "2a33f1c1-01a0-4e1f-a1e8-014",
+        "label": "Frisør & Personlig Pleje",
+        "description": "Hårklip, skønhedspleje og personlig hygiejne"
+      },
+      "clothing": {
+        "id": "2a33f1c1-01a0-4e1f-a1e8-012",
+        "label": "Tøj, Sko & Accessories",
+        "description": "Udgifter til tøj, sko og personlige accessories"
+      },
+      "pharmacy": {
+        "id": "6e85h4f5-54f3-7g4i-e5i4-001",
+        "label": "Apoteker & Medicin",
+        "description": "Køb af medicin og apoteksvarer"
+      },
+      "institutions": {
+        "id": "6e85h4f5-54f3-7g4i-e5i4-002",
+        "label": "Institutioner",
+        "description": "Betalinger til institutioner som børnehaver og skoler"
+      },
+      "unions": {
+        "id": "6e85h4f5-54f3-7g4i-e5i4-003",
+        "label": "Fagforeninger & A-kasser",
+        "description": "Kontingenter til fagforeninger og arbejdsløshedskasser"
+      },
+      "telecom": {
+        "id": "6e85h4f5-54f3-7g4i-e5i4-004",
+        "label": "Internet & Telefoni",
+        "description": "Abonnementer på internet og telefonitjenester"
+      },
+      "memberships": {
+        "id": "6e85h4f5-54f3-7g4i-e5i4-005",
+        "label": "Foreninger & Kontingenter",
+        "description": "Medlemskaber og kontingenter til foreninger"
+      },
+      "insurance": {
+        "id": "6e85h4f5-54f3-7g4i-e5i4-006",
+        "label": "Forsikringer",
+        "description": "Diverse forsikringspræmier"
+      },
+      "eyewear": {
+        "id": "6e85h4f5-54f3-7g4i-e5i4-007",
+        "label": "Briller & Kontaktlinser",
+        "description": "Synsrelaterede udgifter som briller, linser og tilbehør"
+      },
+      "other": {
+        "id": "5d74g3e4-43e2-6f3h-d4h3-003",
+        "label": "Andet",
+        "description": "udgifter der ikke passer i øvrige segmenter"
+      }
+    }
+  },
+  "home": {
+    "color": "teal",
+    "id": "a1b2c3d4-0004-0000-0000-000000000004",
+    "label": "bolig",
+    "image": "https://images.unsplash.com/photo-1570129477492-45c003edd2be",
+    "icon": "IconHome",
+    "description": "Husleje, boligudgifter og vedligeholdelse",
+    "segments": {
+      "loan": {
+        "id": "2a33f1c1-01a0-4e1f-a1e8-001",
+        "label": "Boliglån",
+        "description": "Afdrag og renter på boliglån"
+      },
+      "utilities": {
+        "id": "2a33f1c1-01a0-4e1f-a1e8-002",
+        "label": "Forsyning",
+        "description": "Udgifter til el, vand, varme og affaldshåndtering"
+      },
+      "furnishings": {
+        "id": "2a33f1c1-01a0-4e1f-a1e8-003",
+        "label": "Indretning & Udstyr",
+        "description": "Møbler, hvidevarer og andre bolig artikler"
+      },
+      "maintenance": {
+        "id": "2a33f1c1-01a0-4e1f-a1e8-004",
+        "label": "Vedligehold",
+        "description": "Reparationer og vedligeholdelse af hjemmet"
+      },
+      "tax": {
+        "id": "2a33f1c1-01a0-4e1f-a1e8-005",
+        "label": "Skatter",
+        "description": "Skat og afgifter forbundet med ejendommen"
+      },
+      "hoa": {
+        "id": "2a33f1c1-01a0-4e1f-a1e8-006",
+        "label": "Ejerforening",
+        "description": "Betaling til ejer- eller andelsforening"
+      },
+      "safety": {
+        "id": "2a33f1c1-01a0-4e1f-a1e8-007",
+        "label": "Sikkerhed",
+        "description": "Alarm, overvågning og andre sikkerhedssystemer"
+      },
+      "garden": {
+        "id": "2a33f1c1-01a0-4e1f-a1e8-008",
+        "label": "Have & Planter",
+        "description": "Planter, redskaber og vedligeholdelse af have"
+      },
+      "other": {
+        "id": "2a33f1c1-01a0-4e1f-a1e8-009",
+        "label": "Andet",
+        "description": "Boligudgifter der ikke passer i øvrige segmenter"
+      },
+      "insurance": {
+        "id": "2a33f1c1-01a0-4e1f-a1e8-010",
+        "label": "Forsikringer",
+        "description": "Indboforsikring og boligrelaterede forsikringer"
+      }
+    }
+  },
+  "income": {
+    "color": "cyan",
+    "id": "a1b2c3d4-0005-0000-0000-000000000005",
+    "label": "indkomst",
+    "image": "https://plus.unsplash.com/premium_photo-1679397476740-a236a0c87fad?q=80&w=2427&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    "icon": "IconCoins",
+    "description": "Løn, overførsler og anden indtjening",
+    "segments": {
+      "salary": {
+        "id": "8e1f3b9a-abc1-4e0a-a9e7-001",
+        "label": "Løn",
+        "description": "Indkomst fra ansættelse og arbejde"
+      },
+      "childBenefit": {
+        "id": "8e1f3b9a-abc1-4e0a-a9e7-002",
+        "label": "Børnepenge",
+        "description": "Offentlige udbetalinger til børn"
+      },
+      "interest": {
+        "id": "8e1f3b9a-abc1-4e0a-a9e7-003",
+        "label": "Renteindtægter",
+        "description": "Indtægter fra opsparing og bankkonti"
+      },
+      "tax": {
+        "id": "8e1f3b9a-abc1-4e0a-a9e7-004",
+        "label": "Overskydende Skat",
+        "description": "Tilbagebetaling af for meget betalt skat"
+      },
+      "vacation": {
+        "id": "8e1f3b9a-abc1-4e0a-a9e7-005",
+        "label": "Feriepenge",
+        "description": "Udbetaling af feriepenge fra arbejdsgiver"
+      },
+      "other": {
+        "id": "8e1f3b9a-abc1-4e0a-a9e7-006",
+        "label": "Andet",
+        "description": "Øvrige former for indkomst"
+      },
+      "investment": {
+        "id": "8e1f3b9a-abc1-4e0a-a9e7-007",
+        "label": "Investeringer",
+        "description": "Afkast fra aktier, fonde og lignende"
+      }
+    }
+  },
+  "charity": {
+    "color": "pink",
+    "id": "a1b2c3d4-0006-0000-0000-000000000006",
+    "label": "Velgørenhed",
+    "image": "https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2340&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    "icon": "IconGift",
+    "description": "Donationer og velgørenhedsbidrag",
+    "segments": {
+      "tithe": {
+        "id": "9f2a4b1c-dfd3-400f-a9e2-001",
+        "label": "Tiende",
+        "description": "Religiøst motiverede donationer"
+      },
+      "contribution": {
+        "id": "9f2a4b1c-dfd3-400f-a9e2-002",
+        "label": "Bidrag",
+        "description": "Donationer til organisationer og initiativer"
+      },
+      "other": {
+        "id": "9f2a4b1c-dfd3-400f-a9e2-003",
+        "label": "Andet",
+        "description": "Øvrige velgørenhedsbidrag"
+      }
+    }
+  },
+  "savingsAndInvestments": {
+    "color": "red",
+    "id": "a1b2c3d4-0007-0000-0000-000000000007",
+    "label": "opsparing & investeringer",
+    "image": "https://plus.unsplash.com/premium_photo-1668943599650-2e63ecaef386?q=80&w=2167&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    "icon": "IconPigMoney",
+    "description": "Overførsler til opbygning af formue",
+    "segments": {
+      "pension": {
+        "id": "2b3c4d5e-eee1-4011-b9e1-001",
+        "label": "Pensionsopsparing",
+        "description": "Indbetalinger til pension og aldersopsparing"
+      },
+      "child": {
+        "id": "2b3c4d5e-eee1-4011-b9e1-002",
+        "label": "Børneopsparing",
+        "description": "Opsparing til børns fremtid"
+      },
+      "stocks": {
+        "id": "2b3c4d5e-eee1-4011-b9e1-003",
+        "label": "Aktier & Obligationer",
+        "description": "Investeringer i værdipapirer"
+      },
+      "other": {
+        "id": "2b3c4d5e-eee1-4011-b9e1-004",
+        "label": "Andet",
+        "description": "Øvrige former for opsparing og investering"
+      }
+    }
+  },
+  "uncategorized": {
+    "color": "orange",
+    "id": "a1b2c3d4-0008-0000-0000-000000000008",
+    "label": "ukategoriseret",
+    "image": "https://images.unsplash.com/photo-1534294668821-28a3054f4256?q=80&w=2342&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    "icon": "IconQuestionMark",
+    "description": "Udgifter uden tildelt kategori",
+    "segments": {
+      "uncategorized": {
+        "id": "7e4f1a2b-xyz0-4110-a9f2-001",
+        "label": "Ukategoriseret",
+        "description": "Udgifter der ikke passer i eksisterende kategorier"
+      }
+    }
+  }
+}

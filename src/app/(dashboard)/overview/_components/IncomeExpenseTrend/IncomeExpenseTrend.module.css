@@ -1,0 +1,19 @@
+.wrapper {
+  overflow: hidden;
+  position: relative;
+}
+
+.title {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+}
+
+.chart {
+}
+
+.xAxis {
+}
+
+.yAxis {
+}

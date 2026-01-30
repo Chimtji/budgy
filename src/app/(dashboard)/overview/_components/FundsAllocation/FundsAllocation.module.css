@@ -1,0 +1,7 @@
+.progress {
+  gap: rem(6px);
+  border-radius: rem(3px);
+  > div  {
+    border-radius: rem(3px);
+  }
+}

@@ -1,0 +1,11 @@
+.root {
+  background-color: var(--notification-color);
+
+  .description {
+    color: white;
+  }
+
+  &::before {
+    display: none;
+  }
+}

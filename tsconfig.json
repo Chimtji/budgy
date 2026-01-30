@@ -16,7 +16,16 @@
     "jsx": "preserve",
     "incremental": true,
     "paths": {
-      "@/*": ["./*"]
+      "@/app/*": ["./src/app/*"],
+      "@/service": ["./src/service/index.ts"],
+      "@/service/client":["./src/service/client/index.ts"],
+      "@/service/server":["./src/service/server/index.ts"],
+      "@/service/server/*":["./src/service/server/*"],
+      "@/utilities":["./src/lib/utilities/index.ts"],
+      "@/notifications/*":["./src/lib/notifications/*"],
+      "@/providers/*":["./src/lib/providers/*"],
+      "@/data/*":["./src/data/*"],
+      "@/stores/*":["./src/lib/stores/*"]
     },
     "plugins": [{ "name": "next" }]
   },

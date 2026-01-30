@@ -1,0 +1,38 @@
+{
+  "january": {
+    "label": "Januar"
+  },
+  "february": {
+    "label": "Februar"
+  },
+  "march": {
+    "label": "Marts"
+  },
+  "april": {
+    "label": "April"
+  },
+  "may": {
+    "label": "Maj"
+  },
+  "june": {
+    "label": "Juni"
+  },
+  "july": {
+    "label": "Juli"
+  },
+  "august": {
+    "label": "August"
+  },
+  "september": {
+    "label": "September"
+  },
+  "october": {
+    "label": "Oktober"
+  },
+  "november": {
+    "label": "November"
+  },
+  "december": {
+    "label": "December"
+  }
+}
