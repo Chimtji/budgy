@@ -12,7 +12,9 @@ import {
   IconReceipt2,
   IconTargetArrow,
 } from '@tabler/icons-react';
+import { useShallow } from 'zustand/shallow';
 import { Box, Code, Group, Indicator, Select, Stack, Title } from '@mantine/core';
+import { useAppStore } from '@/stores/app/appStore';
 import { useTransactionsStore } from '@/stores/transactions/transactionsStore';
 import ForceGetButton from './ForceGetButton';
 import SyncButton from './SyncButton';
@@ -23,16 +25,22 @@ export function Navbar() {
   const [active, setActive] = useState(pathname);
 
   const pending = useTransactionsStore((state) => state.pendingTransactions);
+  const { year, setYear } = useAppStore(
+    useShallow((state) => ({
+      year: state.year,
+      setYear: state.setYear,
+    }))
+  );
 
   const data = [
-    { link: '/overview', label: 'Overblik', icon: IconDashboard },
-    {
-      link: '/transactions',
-      label: 'Transaktioner',
-      icon: IconCash,
-      indicator: Object.keys(pending).length,
-    },
-    { link: '/categories', label: 'Kategorier', icon: IconCategory },
+    // { link: '/overview', label: 'Overblik', icon: IconDashboard },
+    // {
+    //   link: '/transactions',
+    //   label: 'Transaktioner',
+    //   icon: IconCash,
+    //   indicator: Object.keys(pending).length,
+    // },
+    // { link: '/categories', label: 'Kategorier', icon: IconCategory },
     { link: '/bills', label: 'Faste Regninger', icon: IconReceipt },
   ];
 
@@ -67,6 +75,8 @@ export function Navbar() {
     );
   };
 
+  const lastTenYears = Array.from({ length: 10 }, (_, i) => String(new Date().getFullYear() - i));
+
   return (
     <>
       <nav className={classes.navbar}>
@@ -78,8 +88,9 @@ export function Navbar() {
           <Stack gap="xs">
             <Select
               placeholder="Vælg år"
-              data={['2025', '2024', '2023', '2022']}
-              defaultValue="2025"
+              data={lastTenYears}
+              defaultValue={year.toString()}
+              onChange={(val) => setYear(parseInt(val!))}
             />
             {data.map((item) => (
               <NavItem {...item} key={item.label} />
@@ -87,10 +98,10 @@ export function Navbar() {
           </Stack>
         </div>
 
-        <div className={classes.footer}>
+        {/* <div className={classes.footer}>
           <ForceGetButton />
           <SyncButton />
-        </div>
+        </div> */}
       </nav>
     </>
   );

@@ -10,25 +10,36 @@
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
     "paths": {
+      "@/service/database/*": ["./src/service/database/*"],
       "@/app/*": ["./src/app/*"],
       "@/service": ["./src/service/index.ts"],
-      "@/service/client":["./src/service/client/index.ts"],
-      "@/service/server":["./src/service/server/index.ts"],
-      "@/service/server/*":["./src/service/server/*"],
-      "@/utilities":["./src/lib/utilities/index.ts"],
-      "@/notifications/*":["./src/lib/notifications/*"],
-      "@/providers/*":["./src/lib/providers/*"],
-      "@/data/*":["./src/data/*"],
-      "@/stores/*":["./src/lib/stores/*"]
+      "@/service/client": ["./src/service/client/index.ts"],
+      "@/service/server": ["./src/service/server/index.ts"],
+      "@/service/server/*": ["./src/service/server/*"],
+      "@/utilities": ["./src/lib/utilities/index.ts"],
+      "@/notifications/*": ["./src/lib/notifications/*"],
+      "@/providers/*": ["./src/lib/providers/*"],
+      "@/data/*": ["./src/data/*"],
+      "@/stores/*": ["./src/lib/stores/*"]
     },
-    "plugins": [{ "name": "next" }]
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
+  ],
   "exclude": ["node_modules"]
 }

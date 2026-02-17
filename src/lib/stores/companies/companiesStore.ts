@@ -2,27 +2,41 @@
 
 import { create } from 'zustand';
 import { showErrorNotification } from '@/notifications/feedback';
-import { type TTimestamp } from '@/service';
-import { addCompany } from './actions/addCompany';
+import { addCompany } from '@/service/database/companies/addCompany';
 import { init } from './actions/init';
 
-export type TCompany = string;
+export type TCompanyDraft = {
+  name: string;
+  domain: string;
+  description: string;
+};
+
+export type TCompany = {
+  name: string;
+  domain: string;
+  description: string;
+  id: number;
+};
+
+export type TCompanies = {
+  [id: string]: TCompany;
+};
 
 export type TCompaniesState = {
-  companies: { [id: string]: { label: TCompany; createdAt: TTimestamp } };
+  companies: TCompanies;
 };
 
 export type TCompaniesStateActions = {
   initCompanies: () => void;
-  addCompany: (company: string) => void;
+  addCompany: (company: TCompany) => void;
 };
 
 export type TCompaniesStore = TCompaniesState & TCompaniesStateActions;
 
 export const useCompaniesStore = create<TCompaniesStore>()((set) => ({
   companies: {},
-  addCompany: (company: string) =>
-    addCompany(company, set)
+  addCompany: (company) =>
+    addCompany(company)
       .then(() => {
         console.info('✅ Successfully Added Company');
       })

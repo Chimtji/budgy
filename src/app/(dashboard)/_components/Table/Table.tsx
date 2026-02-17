@@ -9,6 +9,7 @@ import {
   Box,
   Code,
   Group,
+  Indicator,
   Table as ManTable,
   NumberFormatter,
   ScrollArea,
@@ -173,6 +174,9 @@ const Table = <TColumn extends string, TRow extends Record<TColumn, any>>({
             {Object.entries(filteredData).map(([id, item]) => (
               <ManTable.Tr key={id}>
                 {Object.entries(item).map(([key, value]) => resolveDataDisplay(key, value, item))}
+                <ManTable.Td>
+                  <Indicator color="green" size={8}></Indicator>
+                </ManTable.Td>
                 {editable && (
                   <ManTable.Td>
                     <ActionIcon

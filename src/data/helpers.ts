@@ -1,6 +1,7 @@
+import { capitalizeTitle } from '@/utilities';
 import categories from './categories.json';
 import months from './months.json';
-import { TCategory, TCategoryName, TMonth, TSegment, TSegmentName } from './types';
+import { TCategory, TCategoryName, TMonth, TMonthIndex, TSegment, TSegmentName } from './types';
 
 const getCategory = (category: TCategoryName): TCategory => {
   return categories[category] as TCategory;
@@ -9,6 +10,19 @@ const getCategory = (category: TCategoryName): TCategory => {
 const getSegment = (category: TCategoryName, segment: TSegmentName): TSegment => {
   const segments = categories[category].segments;
   return segments[segment as keyof typeof segments] as TSegment;
+};
+
+export const getSegmentsOfCategory = (
+  category: TCategoryName
+): { value: string; label: string }[] => {
+  const segments = categories[category].segments;
+
+  const result = Object.entries(segments).map(([id, data]) => ({
+    value: id,
+    label: capitalizeTitle(data.label),
+  }));
+
+  return result;
 };
 
 export const getLabelOfCategory = (category: TCategoryName) => {
@@ -25,22 +39,21 @@ export const getColorOfCategory = (category: TCategoryName) => {
   return result;
 };
 
-export const getMonthLabels = (list: TMonth[]) => {
+export const getMonthLabels = (list: TMonthIndex[]) => {
   return list.map((month) => months[month].label);
 };
 
-export const calcDistanceBetweenMonths = (a: TMonth, b: TMonth): number => {
-  const aIndex = Object.keys(months).indexOf(a);
-  const bIndex = Object.keys(months).indexOf(b);
-
-  return Math.abs(aIndex - bIndex);
+export const getMonthLabel = (month: TMonthIndex) => {
+  return months[month].label;
 };
 
-export const calcAllMonthDistances = (data: TMonth[]) => {
-  const monthOrder = Object.keys(months) as TMonth[];
+export const calcDistanceBetweenMonths = (a: TMonthIndex, b: TMonthIndex): number => {
+  return Math.abs(a - b);
+};
 
+export const calcAllMonthDistances = (data: TMonthIndex[]) => {
   // Sort months in calendar order
-  const sortedData = [...data].sort((a, b) => monthOrder.indexOf(a) - monthOrder.indexOf(b));
+  const sortedData = [...data].sort((a, b) => a - b);
 
   const distances = [];
 
@@ -54,7 +67,7 @@ export const calcAllMonthDistances = (data: TMonth[]) => {
   return distances;
 };
 
-export const resolveCadenceLabel = (data: TMonth[]): string[] => {
+export const resolveCadenceLabel = (data: TMonthIndex[]): string[] => {
   const distances = calcAllMonthDistances(data);
   const count = data.length;
 
@@ -79,4 +92,20 @@ export const resolveCadenceLabel = (data: TMonth[]): string[] => {
   } else {
     return getMonthLabels(data);
   }
+};
+
+export const resolveStatus = (category: string, segment: string) => {
+  if (category === 'uncategorized' || segment === 'uncategorized') {
+    return 'pending';
+  } else {
+    return 'added';
+  }
+};
+
+export const toMonthIndexStrings = (monthIndexes: TMonthIndex[]): string[] => {
+  return monthIndexes.map((index) => index.toString());
+};
+
+export const toMonthIndexNumbers = (monthIndexes: string[]): TMonthIndex[] => {
+  return monthIndexes.map((index) => parseInt(index, 10) as TMonthIndex);
 };

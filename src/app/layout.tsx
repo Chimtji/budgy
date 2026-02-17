@@ -4,6 +4,7 @@ import '@mantine/charts/styles.css';
 import './global.css';
 
 import { ColorSchemeScript, mantineHtmlProps } from '@mantine/core';
+import Authentication from '@/providers/Authentication';
 import Mantine from '@/providers/Mantine';
 import ReactQuery from '@/providers/ReactQuery';
 
@@ -16,9 +17,11 @@ const RootLayout = async ({ children }: { children: React.ReactNode }) => {
         <ColorSchemeScript forceColorScheme="dark" defaultColorScheme="dark" />
       </head>
       <body>
-        <ReactQuery>
-          <Mantine>{children}</Mantine>
-        </ReactQuery>
+        <Authentication>
+          <ReactQuery>
+            <Mantine>{children}</Mantine>
+          </ReactQuery>
+        </Authentication>
       </body>
     </html>
   );

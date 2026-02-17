@@ -14,7 +14,7 @@ const firebase = {
 
 // Initialize Firebase
 export const app = initializeApp(firebase);
-export const auth = getAuth();
+// export const auth = getAuth();
 
 let analytics: ReturnType<typeof getAnalytics> | null = null;
 

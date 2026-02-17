@@ -21,6 +21,7 @@ import type { TCategoryName, TSegmentName } from '@/data/types';
 import { TCompany } from '@/stores/companies/companiesStore';
 import { capitalizeTitle } from '@/utilities';
 import CompaniesSelect from '../CompaniesSelect/CompaniesSelect';
+import CompanySelector from '../CompanySelector/CompanySelector';
 
 const EditModal = <T extends Record<string, any>>({
   onClose,
@@ -74,6 +75,7 @@ const EditModal = <T extends Record<string, any>>({
 
   const createUpdatedItem = () => ({
     ...item,
+    ...(amount && { amount }),
     ...(description && { description }),
     ...(company && { company }),
     ...(segment && { segment }),
@@ -109,7 +111,7 @@ const EditModal = <T extends Record<string, any>>({
         {item.amount && (
           <NumberInput value={amount} label="Beløb" onChange={setAmount} suffix=" Kr." />
         )}
-        {item.company && <CompaniesSelect val={company as string} onChange={setCompany} />}
+        {item.company && <CompanySelector onChange={setCompany} />}
         {item.description && (
           <TextInput
             value={description}
