@@ -8,8 +8,6 @@ export const isAuthenticated = async (): Promise<
 > => {
   const { data: session } = await auth.getSession();
 
-  console.log('Session:', session);
-
   if (!session?.user) {
     return {
       status: 401,

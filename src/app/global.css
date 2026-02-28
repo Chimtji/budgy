@@ -3,7 +3,3 @@
 :root[data-mantine-color-scheme='dark'] {
   font-size: calc(0.75vw + 25%);
 }
-
-* {
-  /* transition: all 0.2s ease; */
-}

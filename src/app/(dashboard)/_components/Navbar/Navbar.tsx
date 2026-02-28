@@ -3,28 +3,16 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import {
-  Icon,
-  IconCash,
-  IconCategory,
-  IconDashboard,
-  IconReceipt,
-  IconReceipt2,
-  IconTargetArrow,
-} from '@tabler/icons-react';
+import { Icon, IconReceipt } from '@tabler/icons-react';
 import { useShallow } from 'zustand/shallow';
-import { Box, Code, Group, Indicator, Select, Stack, Title } from '@mantine/core';
+import { Box, Group, Select, Stack, Title } from '@mantine/core';
 import { useAppStore } from '@/stores/app/appStore';
-import { useTransactionsStore } from '@/stores/transactions/transactionsStore';
-import ForceGetButton from './ForceGetButton';
-import SyncButton from './SyncButton';
 import classes from './Navbar.module.css';
 
-export function Navbar() {
+const Navbar = () => {
   const pathname = usePathname();
   const [active, setActive] = useState(pathname);
 
-  const pending = useTransactionsStore((state) => state.pendingTransactions);
   const { year, setYear } = useAppStore(
     useShallow((state) => ({
       year: state.year,
@@ -32,17 +20,7 @@ export function Navbar() {
     }))
   );
 
-  const data = [
-    // { link: '/overview', label: 'Overblik', icon: IconDashboard },
-    // {
-    //   link: '/transactions',
-    //   label: 'Transaktioner',
-    //   icon: IconCash,
-    //   indicator: Object.keys(pending).length,
-    // },
-    // { link: '/categories', label: 'Kategorier', icon: IconCategory },
-    { link: '/bills', label: 'Faste Regninger', icon: IconReceipt },
-  ];
+  const data = [{ link: '/bills', label: 'Faste Regninger', icon: IconReceipt }];
 
   const NavItem = ({
     link,
@@ -97,12 +75,9 @@ export function Navbar() {
             ))}
           </Stack>
         </div>
-
-        {/* <div className={classes.footer}>
-          <ForceGetButton />
-          <SyncButton />
-        </div> */}
       </nav>
     </>
   );
-}
+};
+
+export default Navbar;
