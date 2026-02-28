@@ -14,8 +14,8 @@ export const addBill = async (bill: TBill): Promise<TServerResponse<TBill & { id
 
   try {
     const [result] = await sqlClient`
-      INSERT INTO bills (amount, company_id, category, segment, due, user_id, year)
-      VALUES (${bill.amount}, ${bill.companyId}, ${bill.category}, ${bill.segment}, ${JSON.stringify(bill.due)}, ${auth.data.user.id}, ${bill.year})
+      INSERT INTO bills (amount, company_id, category, segment, due, user_id, year, name)
+      VALUES (${bill.amount}, ${bill.companyId}, ${bill.category}, ${bill.segment}, ${JSON.stringify(bill.due)}, ${auth.data.user.id}, ${bill.year}, ${bill.name})
       RETURNING id;
     `;
 

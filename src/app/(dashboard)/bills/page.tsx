@@ -10,18 +10,18 @@ import { getMonthLabel } from '@/data/helpers';
 import { TMonthIndex } from '@/data/types';
 import { useAppStore } from '@/stores/app/appStore';
 import { useBillsStore } from '@/stores/bills/billsStore';
-import { calculateMonthlyAmounts } from '@/stores/bills/billsStore.helpers';
+import { calculateMonthlyExpenses } from '@/stores/bills/billsStore.helpers';
 import BillCardOverview from './_components/BillCardOverview/BillCardOverview';
 import BillsTable from './_components/BillsTable/BillsTable';
 
 const Bills = () => {
   const year = useAppStore((state) => state.year);
-  const { bills, total, average, highest, lowest, getAllOfYear } = useBillsStore(
+  const { bills, total, transferPlan, highest, lowest, getAllOfYear } = useBillsStore(
     useShallow((state) => ({
       bills: state.bills,
       highest: state.highest,
       lowest: state.lowest,
-      average: state.average,
+      transferPlan: state.transferPlan,
       total: state.total,
       addBill: state.add,
       deleteBill: state.delete,
@@ -35,14 +35,14 @@ const Bills = () => {
     getAllOfYear(year);
   }, []);
 
-  const monthlyAmounts = calculateMonthlyAmounts(bills[year]);
+  const monthlyAmounts = calculateMonthlyExpenses(bills[year]);
   const billsChartData = Object.keys(monthlyAmounts).map((month) => ({
     month: getMonthLabel(parseInt(month) as TMonthIndex),
     amount: monthlyAmounts[parseInt(month) as keyof typeof monthlyAmounts],
   }));
 
   return (
-    <Box w="100%" h="100vh" p="lg">
+    <Box w="100%" h="100vh" p="lg" style={{ overflowY: 'scroll' }}>
       <Stack>
         <Box display="grid" style={{ gridTemplateColumns: '3fr 1fr', columnGap: '1em' }}>
           <Paper bg="dark.7" px="xl" py="md" bd="solid 1px dark.7" radius="md">
@@ -62,7 +62,7 @@ const Bills = () => {
               }}
               gridAxis="x"
               withYAxis={false}
-              yAxisProps={{ domain: [lowest - 10, highest] }}
+              // yAxisProps={{ domain: [lowest - 10, highest] }}
             />
           </Paper>
           <Stack gap={isScrolled ? 0 : 'md'}>
@@ -86,13 +86,14 @@ const Bills = () => {
             />
             <BillCardOverview
               condensed={isScrolled}
-              value={average}
-              description={'Gennemsnit pr. måned'}
+              value={transferPlan.monthly}
+              secondaryValue={transferPlan.start}
+              description={'Fast Overførsel (første)'}
               icon={IconCalendarWeek}
             />
           </Stack>
         </Box>
-        <Paper bg="dark.7" p="xl" bd="solid 1px dark.7" radius="md">
+        <Paper bg="dark.7" p="xl" bd="solid 1px dark.7" radius="md" h="100%">
           <BillsTable title="Regninger" bills={bills[year] || {}} />
         </Paper>
       </Stack>

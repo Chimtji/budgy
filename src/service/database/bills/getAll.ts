@@ -37,6 +37,7 @@ export const getAllOfYear = async (year: number): Promise<TServerResponse<TBills
         amount: parseFloat(bill.amount),
         due: JSON.parse(bill.due) as TBill['due'],
         year: bill.year,
+        name: bill.name,
       } as TBill;
     });
 

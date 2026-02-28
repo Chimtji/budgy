@@ -18,7 +18,7 @@ export const editBill = async (
   try {
     await sqlClient`
       UPDATE bills
-      SET amount = ${bill.amount}, company_id = ${bill.companyId}, category = ${bill.category}, segment = ${bill.segment}, due = ${JSON.stringify(bill.due)}, year = ${bill.year}
+      SET amount = ${bill.amount}, company_id = ${bill.companyId}, category = ${bill.category}, segment = ${bill.segment}, due = ${JSON.stringify(bill.due)}, year = ${bill.year}, name = ${bill.name}
       WHERE id = ${id} AND user_id = ${auth.data.user.id}
       RETURNING id;
     `;

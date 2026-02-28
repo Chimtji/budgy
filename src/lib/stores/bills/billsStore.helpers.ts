@@ -21,7 +21,7 @@ export const groupBillsByMonth = (bills: TBills) => {
   return grouped;
 };
 
-export const calculateMonthlyAmounts = (bills: TBills) => {
+export const calculateMonthlyExpenses = (bills: TBills) => {
   const grouped = groupBillsByMonth(bills);
   const amounts = {
     1: 0,

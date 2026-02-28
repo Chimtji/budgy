@@ -1,26 +1,9 @@
-import { useState } from 'react';
 import { useShallow } from 'zustand/shallow';
-import {
-  Button,
-  Center,
-  Checkbox,
-  Fieldset,
-  Group,
-  Modal,
-  NumberInput,
-  Stack,
-  Title,
-} from '@mantine/core';
+import { Button } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import CategorySelector from '@/app/(dashboard)/_components/CategorySelector/CategorySelector';
-import CompanySelector from '@/app/(dashboard)/_components/CompanySelector/CompanySelector';
-import SegmentSelector from '@/app/(dashboard)/_components/SegmentSelector/SegmentSelector';
-import months from '@/data/months.json';
-import { TCategoryName, TSegmentName } from '@/data/types';
 import { useAppStore } from '@/stores/app/appStore';
 import { useBillsStore } from '@/stores/bills/billsStore';
-import { TCompany } from '@/stores/companies/companiesStore';
-import BillModal, { TBillModalProps, TBillModalReturn } from './BillModal';
+import BillModal, { TBillModalProps } from './BillModal';
 
 const CreateBill = ({}) => {
   const [opened, { open, close }] = useDisclosure(false);
@@ -39,6 +22,7 @@ const CreateBill = ({}) => {
     category,
     due,
     company,
+    name,
   }) => {
     addBill({
       amount: Number(amount),
@@ -48,7 +32,8 @@ const CreateBill = ({}) => {
       companyId: company.id,
       companyName: company.name,
       companyDomain: company.domain,
-      year: year,
+      year,
+      name,
     });
     close();
   };

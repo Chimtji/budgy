@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { IconSortAscending, IconSortDescending } from '@tabler/icons-react';
 import { Center, Group, MantineStyleProps, Table, Text, UnstyledButton } from '@mantine/core';
 import { useToggle } from '@mantine/hooks';
-import { TBillRow } from './BillsTable';
+import { TBillRow } from './BillsTable.types';
 import classes from './BillsTable.module.css';
 
 type THeadProps = MantineStyleProps & {
@@ -18,7 +18,7 @@ type TTableHeadProps = {
 };
 
 const BillsTableHead = ({ onSort }: THeadProps) => {
-  const [sortColumn, setSortColumn] = useState<keyof TBillRow>('company');
+  const [sortColumn, setSortColumn] = useState<keyof TBillRow>('companyName');
   const [sortDirection, toggleSortDirection] = useToggle<'asc' | 'desc'>(['asc', 'desc']);
 
   const handleSort = (column: keyof TBillRow) => {
@@ -54,50 +54,60 @@ const BillsTableHead = ({ onSort }: THeadProps) => {
   };
 
   return (
-    <>
-      <TableHead
-        sorted={sortColumn === 'amount'}
-        direction={sortDirection}
-        onSort={() => handleSort('amount')}
-      >
-        Beløb
-      </TableHead>
-      <TableHead
-        sorted={sortColumn === 'company'}
-        direction={sortDirection}
-        onSort={() => handleSort('company')}
-      >
-        Forhandler
-      </TableHead>
-      <TableHead
-        sorted={sortColumn === 'category'}
-        direction={sortDirection}
-        onSort={() => handleSort('category')}
-      >
-        Kategori
-      </TableHead>
-      <TableHead
-        sorted={sortColumn === 'segment'}
-        direction={sortDirection}
-        onSort={() => handleSort('segment')}
-      >
-        Segment
-      </TableHead>
-      <TableHead
-        sorted={sortColumn === 'due'}
-        direction={sortDirection}
-        onSort={() => handleSort('due')}
-      >
-        Betales
-      </TableHead>
-      <TableHead
-        sorted={sortColumn === 'status'}
-        direction={sortDirection}
-        onSort={() => handleSort('status')}
-      >
-        Status
-      </TableHead>
-    </>
+    <Table.Thead className={`${classes.head}`}>
+      <Table.Tr>
+        <TableHead
+          sorted={sortColumn === 'amount'}
+          direction={sortDirection}
+          onSort={() => handleSort('amount')}
+        >
+          Beløb
+        </TableHead>
+        <TableHead
+          sorted={sortColumn === 'name'}
+          direction={sortDirection}
+          onSort={() => handleSort('name')}
+        >
+          Navn
+        </TableHead>
+        <TableHead
+          sorted={sortColumn === 'companyName'}
+          direction={sortDirection}
+          onSort={() => handleSort('companyName')}
+        >
+          Firma
+        </TableHead>
+        <TableHead
+          sorted={sortColumn === 'category'}
+          direction={sortDirection}
+          onSort={() => handleSort('category')}
+        >
+          Kategori
+        </TableHead>
+        <TableHead
+          sorted={sortColumn === 'segment'}
+          direction={sortDirection}
+          onSort={() => handleSort('segment')}
+        >
+          Segment
+        </TableHead>
+        <TableHead
+          sorted={sortColumn === 'due'}
+          direction={sortDirection}
+          onSort={() => handleSort('due')}
+        >
+          Betales
+        </TableHead>
+        <TableHead
+          sorted={sortColumn === 'status'}
+          direction={sortDirection}
+          onSort={() => handleSort('status')}
+        >
+          Status
+        </TableHead>
+        <Table.Th className={classes.headItem}></Table.Th>
+      </Table.Tr>
+    </Table.Thead>
   );
 };
 

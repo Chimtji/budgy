@@ -9,7 +9,7 @@ import { deleteBill } from '@/service/database/bills/deleteBill';
 import { editBill } from '@/service/database/bills/editBill';
 import { getAllOfYear } from '@/service/database/bills/getAll';
 import { useAppStore } from '../app/appStore';
-import { calculateMonthlyAmounts } from './billsStore.helpers';
+import { calculateMonthlyExpenses } from './billsStore.helpers';
 import { TBillsStore } from './billsStore.types';
 
 const STORE_NAME = 'bills-store';
@@ -19,7 +19,10 @@ export const useBillsStore = create<TBillsStore>()(
     persist<TBillsStore>(
       (set) => ({
         bills: {},
-        average: 0,
+        transferPlan: {
+          monthly: 0,
+          start: 0,
+        },
         highest: 0,
         lowest: 0,
         total: 0,
@@ -102,27 +105,15 @@ useBillsStore.subscribe(
   (bills) => {
     const year = useAppStore.getState().year;
 
-    const amounts = calculateMonthlyAmounts(bills[year]);
+    const expenses = calculateMonthlyExpenses(bills[year]);
 
-    const highest = Math.max(...Object.values(amounts).map((amount) => amount));
+    const highest = Math.max(...Object.values(expenses).map((amount) => amount));
 
-    useBillsStore.setState({ highest } as unknown as Partial<TBillsStore>);
-  }
-);
-
-useBillsStore.subscribe(
-  (state) => state.bills,
-  (bills) => {
-    let total = 0;
-
-    const year = useAppStore.getState().year;
-    const amounts = calculateMonthlyAmounts(bills[year]);
-
-    Object.values(amounts).forEach((amount) => {
-      total += amount;
-    });
-
-    useBillsStore.setState({ total: Math.floor(total) } as unknown as Partial<TBillsStore>);
+    useBillsStore.setState(
+      produce((state) => {
+        state.highest = highest;
+      })
+    );
   }
 );
 
@@ -130,11 +121,15 @@ useBillsStore.subscribe(
   (state) => state.bills,
   (bills) => {
     const year = useAppStore.getState().year;
-    const amounts = calculateMonthlyAmounts(bills[year]);
+    const expenses = calculateMonthlyExpenses(bills[year]);
 
-    const lowest = Math.min(...Object.values(amounts).map((amount) => amount));
+    const total = Object.values(expenses).reduce((sum, e) => sum + e, 0);
 
-    useBillsStore.setState({ lowest } as unknown as Partial<TBillsStore>);
+    useBillsStore.setState(
+      produce((state) => {
+        state.total = Math.floor(total);
+      })
+    );
   }
 );
 
@@ -142,10 +137,47 @@ useBillsStore.subscribe(
   (state) => state.bills,
   (bills) => {
     const year = useAppStore.getState().year;
-    const monthlyAmounts = calculateMonthlyAmounts(bills[year]);
-    const amounts = Object.values(monthlyAmounts);
-    const average = amounts.reduce((sum, amount) => sum + amount, 0) / amounts.length;
+    const expenses = calculateMonthlyExpenses(bills[year]);
 
-    useBillsStore.setState({ average: Math.floor(average) } as unknown as Partial<TBillsStore>);
+    const lowest = Math.min(...Object.values(expenses).map((amount) => amount));
+
+    useBillsStore.setState(
+      produce((state) => {
+        state.lowest = lowest;
+      })
+    );
+  }
+);
+
+useBillsStore.subscribe(
+  (state) => state.bills,
+  (bills) => {
+    const year = useAppStore.getState().year;
+    const expenses = Object.values(calculateMonthlyExpenses(bills[year]));
+    const totalMonths = expenses.length;
+
+    const total = expenses.reduce((sum, e) => sum + e, 0);
+    const average = Math.ceil(total / totalMonths);
+
+    // Calculate max deficit if we pay expenses BEFORE receiving transfers
+    let balance = 0;
+    let minBalance = 0;
+
+    for (const expense of expenses) {
+      balance -= expense; // Pay expense first
+      minBalance = Math.min(minBalance, balance);
+      balance += average; // Then receive transfer
+    }
+
+    const startTransfer = Math.ceil(-minBalance);
+
+    useBillsStore.setState(
+      produce((state) => {
+        state.transferPlan = {
+          monthly: average,
+          start: startTransfer,
+        };
+      })
+    );
   }
 );

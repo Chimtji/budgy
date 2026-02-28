@@ -25,6 +25,7 @@ const EditBill = ({ bill }: { bill: TBillRow }) => {
     segment,
     due,
     company,
+    name,
   }) => {
     edit(
       {
@@ -33,6 +34,7 @@ const EditBill = ({ bill }: { bill: TBillRow }) => {
         segment,
         due,
         year,
+        name,
         companyId: company.id,
         companyName: company.name,
         companyDomain: company.domain,
@@ -53,6 +55,7 @@ const EditBill = ({ bill }: { bill: TBillRow }) => {
       </ActionIcon>
       <BillModal
         data={{
+          name: bill.name,
           amount: bill.amount,
           category: bill.category,
           segment: bill.segment,

@@ -9,6 +9,7 @@ export type TBill = {
   segment: TSegmentName;
   amount: number;
   year: number;
+  name: string;
 };
 
 export type TAllBills = { [year: number]: TBills };
@@ -17,7 +18,10 @@ export type TBills = { [id: string]: TBill };
 
 export type TBillsState = {
   bills: TAllBills;
-  average: number;
+  transferPlan: {
+    monthly: number;
+    start: number;
+  };
   highest: number;
   lowest: number;
   total: number;

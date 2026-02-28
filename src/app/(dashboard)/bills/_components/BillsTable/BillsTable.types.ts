@@ -16,4 +16,5 @@ export type TBillRow = {
   status: string;
   due: TMonthIndex[];
   id: number;
+  name: string;
 };

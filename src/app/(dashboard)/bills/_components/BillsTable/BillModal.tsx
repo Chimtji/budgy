@@ -8,6 +8,7 @@ import {
   Modal,
   NumberInput,
   Stack,
+  TextInput,
   Title,
 } from '@mantine/core';
 import CategorySelector from '@/app/(dashboard)/_components/CategorySelector/CategorySelector';
@@ -24,6 +25,7 @@ export type TBillModalReturn = {
   category: TCategoryName;
   due: TMonthIndex[];
   company: TCompany;
+  name: string;
 };
 
 export type TBillModalProps = {
@@ -47,6 +49,7 @@ const BillModal = ({
   onRightAction,
   close,
 }: TBillModalProps) => {
+  const [name, setName] = useState<string>(data?.name || '');
   const [amount, setAmount] = useState<number | string>(data?.amount || 0);
   const [segment, setSegment] = useState<TSegmentName>(data?.segment || 'uncategorized');
   const [category, setCategory] = useState<TCategoryName>(data?.category || 'uncategorized');
@@ -61,11 +64,11 @@ const BillModal = ({
   );
 
   const handleRightAction = () => {
-    onRightAction?.({ amount, segment, category, due: toMonthIndexNumbers(due), company });
+    onRightAction?.({ amount, segment, category, due: toMonthIndexNumbers(due), company, name });
   };
 
   const handleLeftAction = () => {
-    onLeftAction?.({ amount, segment, category, due: toMonthIndexNumbers(due), company });
+    onLeftAction?.({ amount, segment, category, due: toMonthIndexNumbers(due), company, name });
   };
 
   return (
@@ -94,6 +97,11 @@ const BillModal = ({
           </Fieldset>
           <Fieldset legend="Budgettering" h="100%">
             <Stack>
+              <TextInput
+                value={name}
+                label="Navn"
+                onChange={(event) => setName(event.currentTarget.value)}
+              />
               <CompanySelector onChange={(chosen) => setCompany(chosen)} />
               <CategorySelector onChange={(chosen) => setCategory(chosen.value)} />
               <SegmentSelector

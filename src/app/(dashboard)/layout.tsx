@@ -21,7 +21,7 @@ const Dashboard: React.FC<TProps> = async ({ children }) => {
         <Box h="100vh" bg="dark.8">
           <Navbar />
         </Box>
-        <Box h="100vh" bg="dark.8">
+        <Box h="100vh" bg="dark.8" style={{ overflow: 'hidden' }}>
           <Box>{children}</Box>
         </Box>
       </Box>
