@@ -2,8 +2,9 @@
 
 import { create } from 'zustand';
 import { showErrorNotification } from '@/notifications/feedback';
+import { TServerResponse } from '@/service';
 import { addCompany } from '@/service/database/companies/addCompany';
-import { init } from './actions/init';
+import { searchCompany } from '@/service/database/companies/searchCompany';
 
 export type TCompanyDraft = {
   name: string;
@@ -27,28 +28,30 @@ export type TCompaniesState = {
 };
 
 export type TCompaniesStateActions = {
-  initCompanies: () => void;
-  addCompany: (company: TCompany) => void;
+  add: (company: TCompanyDraft) => Promise<TServerResponse<TCompany>>;
+  search: (query: string) => Promise<TServerResponse<TCompanies>>;
 };
 
 export type TCompaniesStore = TCompaniesState & TCompaniesStateActions;
 
 export const useCompaniesStore = create<TCompaniesStore>()((set) => ({
   companies: {},
-  addCompany: (company) =>
-    addCompany(company)
-      .then(() => {
+  search: (query: string) =>
+    searchCompany(query).then((result) => {
+      if (result.success) {
+        console.info('✅ Successfully Searched Companies. Result: ' + result.data);
+      } else {
+        showErrorNotification({ title: 'Search Error', message: JSON.stringify(result.error) });
+      }
+      return result;
+    }),
+  add: (company) =>
+    addCompany(company).then((result) => {
+      if (result.success) {
         console.info('✅ Successfully Added Company');
-      })
-      .catch((error) => {
-        showErrorNotification({ title: 'Add Error', message: JSON.stringify(error) });
-      }),
-  initCompanies: () =>
-    init(set)
-      .then(() => {
-        console.info('✅ Successfully Initiated Companies');
-      })
-      .catch((error) => {
-        showErrorNotification({ title: 'Init Error', message: JSON.stringify(error) });
-      }),
+      } else {
+        showErrorNotification({ title: 'Add Error', message: JSON.stringify(result.error) });
+      }
+      return result;
+    }),
 }));

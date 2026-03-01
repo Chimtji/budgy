@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useShallow } from 'zustand/shallow';
 import {
   Avatar,
   Combobox,
@@ -11,9 +12,12 @@ import {
   useCombobox,
 } from '@mantine/core';
 import { useDebouncedState } from '@mantine/hooks';
-import { addCompany } from '@/service/database/companies/addCompany';
-import { searchCompany } from '@/service/database/companies/searchCompany';
-import { TCompanies, TCompany, TCompanyDraft } from '@/stores/companies/companiesStore';
+import {
+  TCompanies,
+  TCompany,
+  TCompanyDraft,
+  useCompaniesStore,
+} from '@/stores/companies/companiesStore';
 import EditModal from './EditModal';
 
 const CompanySelector = ({ onChange }: { onChange?: (val: TCompany) => void }) => {
@@ -35,6 +39,10 @@ const CompanySelector = ({ onChange }: { onChange?: (val: TCompany) => void }) =
   const [companies, setCompanies] = useState<TCompanies>({});
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
   const [selected, setSelected] = useState<TCompany | null>(null);
+
+  const { addCompany, searchCompany } = useCompaniesStore(
+    useShallow((state) => ({ addCompany: state.add, searchCompany: state.search }))
+  );
 
   useEffect(() => {
     setDebouncedSearch(search);

@@ -22,21 +22,6 @@ export type TAPITransactionItem = {
 
 export type TTimestamp = { _seconds: number; _nanoseconds: number };
 
-export type TAPITransactions = {
-  booked: TAPITransactionItem[];
-  pending: TAPITransactionItem[];
-};
-
-export type TAPIBank = {
-  id: string;
-  name: string;
-  bic?: string;
-  transactional_total_days?: string;
-  max_access_valid_for_days?: string;
-  countries: string[];
-  logo: string;
-};
-
 export type TServerResponse<T> =
   | { status: 500; error: any; success: false }
   | { status: 200; data: T; success: true }

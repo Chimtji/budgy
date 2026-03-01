@@ -1,7 +1,7 @@
 import { type ReactNode } from 'react';
 import { Box } from '@mantine/core';
 import State from '@/providers/State';
-import { Navbar } from './_components/Navbar/Navbar';
+import Navbar from './_components/Navbar/Navbar';
 
 type TProps = { children: ReactNode };
 
