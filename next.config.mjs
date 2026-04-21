@@ -13,6 +13,9 @@ export default withBundleAnalyzer({
     optimizePackageImports: ['@mantine/core', '@mantine/hooks'],
   },
   images: {
-    remotePatterns: [{hostname: '*.unsplash.com'}],
+    remotePatterns: [{ hostname: '*.unsplash.com' }],
+  },
+  devIndicators: {
+    position: 'bottom-right',
   },
 });

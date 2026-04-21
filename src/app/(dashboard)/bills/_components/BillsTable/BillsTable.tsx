@@ -1,143 +1,89 @@
 import { useEffect, useState } from 'react';
-import { IconSearch } from '@tabler/icons-react';
-import {
-  Avatar,
-  Badge,
-  Box,
-  Code,
-  Group,
-  Indicator,
-  NumberFormatter,
-  ScrollArea,
-  Stack,
-  Table,
-  Text,
-  TextInput,
-  Title,
-  Tooltip,
-} from '@mantine/core';
-import { useDebouncedValue } from '@mantine/hooks';
-import {
-  getLabelOfCategory,
-  getLabelOfSegment,
-  getMonthLabels,
-  resolveCadenceLabel,
-  resolveStatus,
-} from '@/data/helpers';
+import { Box, Table } from '@mantine/core';
+import { getLabelOfCategory, getLabelOfSegment, resolveStatus } from '@/data/helpers';
+import BillRow from './BillRow';
 import { TBillRow, TBillsTableProps } from './BillsTable.types';
 import BillsTableHead from './BillsTableHead';
-import CreateBill from './CreateBill';
-import EditBill from './EditBill';
 import classes from './BillsTable.module.css';
 
-const BillsTable = ({ bills, title }: TBillsTableProps) => {
-  const [search, setSearch] = useState('');
-  const [debouncedSearch] = useDebouncedValue(search, 200);
+const BillsTable = ({ bills, title, search }: TBillsTableProps) => {
   const [filteredData, setFilteredData] = useState<typeof bills>(bills);
+  const [sortColumn, setSortColumn] = useState<keyof TBillRow>('companyName');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+
+  const handleSearch = (searchQuery: string) => {
+    const query = searchQuery.trim().toLowerCase();
+
+    if (!query) {
+      setFilteredData(bills);
+      return;
+    }
+
+    const entries = Object.entries(bills).filter(([, bill]) => {
+      const name = bill.name.toLowerCase();
+      const companyName = bill.companyName.toLowerCase();
+      const categoryLabel = getLabelOfCategory(bill.category).toLowerCase();
+      const segmentLabel = getLabelOfSegment(bill.category, bill.segment).toLowerCase();
+
+      return (
+        name.includes(query) ||
+        companyName.includes(query) ||
+        categoryLabel.includes(query) ||
+        segmentLabel.includes(query)
+      );
+    });
+
+    setFilteredData(Object.fromEntries(entries));
+  };
 
   useEffect(() => {
     handleSearch(search);
-  }, [debouncedSearch]);
+  }, [search, bills]);
 
-  const rows: TBillRow[] = Object.entries(bills).map(([id, bill]) => ({
-    ...bill,
-    status: resolveStatus(bill.category, bill.segment),
-    id: parseInt(id, 10),
-  }));
+  const rows: TBillRow[] = Object.entries(filteredData)
+    .map(([id, bill]) => ({
+      ...bill,
+      status: resolveStatus(bill.category, bill.segment),
+      id: parseInt(id, 10),
+    }))
+    .sort((a, b) => {
+      const aVal = a[sortColumn];
+      const bVal = b[sortColumn];
+      let cmp = 0;
 
-  const handleSearch = (search: string) => {
-    // onSearch(search).then((result) => setFilteredData(result));
-  };
+      if (sortColumn === 'due') {
+        // For due column, sort by the number of payments (array length)
+        const aLength = Array.isArray(aVal) ? aVal.length : 0;
+        const bLength = Array.isArray(bVal) ? bVal.length : 0;
+        cmp = aLength - bLength;
+      } else if (Array.isArray(aVal) && Array.isArray(bVal)) {
+        cmp = (aVal[0] ?? 0) - (bVal[0] ?? 0);
+      } else if (typeof aVal === 'number' && typeof bVal === 'number') {
+        cmp = aVal - bVal;
+      } else {
+        cmp = String(aVal).localeCompare(String(bVal), 'da');
+      }
+
+      return sortDirection === 'asc' ? cmp : -cmp;
+    });
 
   return (
-    <Stack h="100%">
-      <Group justify="space-between" h="100%">
-        <Title order={3}>{title}</Title>
-        <Group justify="space-between">
-          <Group>
-            <TextInput
-              radius="md"
-              placeholder="Search.."
-              leftSection={<IconSearch size={20} />}
-              variant="filled"
-              value={search}
-              onChange={(event) => {
-                setSearch(event.currentTarget.value);
-              }}
-              rightSection={<Text>{Object.keys(filteredData).length}</Text>}
-              styles={{
-                input: {
-                  backgroundColor: `var(--mantine-color-dark-8)`,
-                },
-              }}
-            />
-
-            <CreateBill />
-          </Group>
-        </Group>
-      </Group>
-      <Box className={classes.root} h="100%">
-        <Table className={classes.table} h="100%">
-          <BillsTableHead onSort={(column, direction) => {}} />
-          <Table.Tbody className={classes.body} h="100%">
-            {rows.map((row) => (
-              <Table.Tr key={row.companyName + row.amount}>
-                <Table.Td>
-                  <NumberFormatter
-                    value={Math.abs(row.amount)}
-                    thousandSeparator="."
-                    decimalSeparator=","
-                    decimalScale={1}
-                    suffix=" Kr."
-                  />
-                </Table.Td>
-                <Table.Td>
-                  <Text>{row.name}</Text>
-                </Table.Td>
-                <Table.Td>
-                  <Group>
-                    <Tooltip label={row.companyName}>
-                      <Avatar
-                        size="md"
-                        src={`https://cdn.brandfetch.io/domain/${row.companyDomain}?c=${process.env.NEXT_PUBLIC_BRANDFETCH_CLIENT_ID}`}
-                      />
-                    </Tooltip>
-                  </Group>
-                </Table.Td>
-                <Table.Td>
-                  <Badge variant="light">{getLabelOfCategory(row.category)}</Badge>
-                </Table.Td>
-                <Table.Td>
-                  <Badge variant="light">{getLabelOfSegment(row.category, row.segment)}</Badge>
-                </Table.Td>
-                <Table.Td>
-                  <Tooltip label={getMonthLabels(row.due).join(', ')}>
-                    <Group>
-                      {resolveCadenceLabel(row.due).map((month) => (
-                        <Code key={month + row.companyName + row.amount}>{month}</Code>
-                      ))}
-                    </Group>
-                  </Tooltip>
-                </Table.Td>
-                <Table.Td>
-                  <Indicator
-                    position="middle-start"
-                    processing={row.status === 'pending'}
-                    color={row.status === 'added' ? 'green' : 'yellow'}
-                    ml="1em"
-                  >
-                    <Box w="1px" h="1px" ml="lg" />
-                  </Indicator>
-                </Table.Td>
-                <Table.Td>
-                  <EditBill bill={row} />
-                </Table.Td>
-              </Table.Tr>
-            ))}
-          </Table.Tbody>
-        </Table>
-      </Box>
-    </Stack>
+    <Box className={classes.root}>
+      <Box className={classes.scrollHider} />
+      <Table className={classes.table}>
+        <BillsTableHead
+          onSort={(column, direction) => {
+            setSortColumn(column as keyof TBillRow);
+            setSortDirection(direction ?? 'asc');
+          }}
+        />
+        <Table.Tbody className={classes.body}>
+          {rows.map((row) => (
+            <BillRow key={row.companyName + row.amount} row={row} />
+          ))}
+        </Table.Tbody>
+      </Table>
+    </Box>
   );
 };
 

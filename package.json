@@ -16,7 +16,9 @@
     "prettier:write": "prettier --write \"**/*.{ts,tsx}\"",
     "test": "npm run prettier:check && npm run lint && npm run typecheck && npm run jest",
     "storybook": "storybook dev -p 6006",
-    "storybook:build": "storybook build"
+    "storybook:build": "storybook build",
+    "seed": "tsx scripts/dummy/seedDummyBills.ts",
+    "seed:categories": "tsx scripts/dummy/seedCategories.ts"
   },
   "dependencies": {
     "@mantine/charts": "^8.3.3",
@@ -57,7 +59,7 @@
     "@typescript-eslint/eslint-plugin": "^8.45.0",
     "@typescript-eslint/parser": "^8.45.0",
     "babel-loader": "^10.0.0",
-    "dotenv": "^17.2.3",
+    "dotenv": "^17.3.1",
     "eslint": "^9.36.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-airbnb-typescript": "^18.0.0",
@@ -79,6 +81,7 @@
     "stylelint": "^16.24.0",
     "stylelint-config-standard-scss": "^16.0.0",
     "ts-jest": "^29.4.4",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   },
   "packageManager": "yarn@4.4.1"

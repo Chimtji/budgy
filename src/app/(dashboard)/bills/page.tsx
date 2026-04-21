@@ -1,103 +1,61 @@
 'use client';
 
-import { use, useEffect } from 'react';
-import { IconCalendarWeek, IconCoins, IconMoneybag, IconWallet } from '@tabler/icons-react';
+import { useEffect, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { BarChart } from '@mantine/charts';
-import { Box, Group, Paper, Stack, Text, ThemeIcon, Title } from '@mantine/core';
-import { useToggle } from '@mantine/hooks';
-import { getMonthLabel } from '@/data/helpers';
-import { TMonthIndex } from '@/data/types';
+import { Box, Paper, Stack } from '@mantine/core';
+import { useDebouncedValue } from '@mantine/hooks';
 import { useAppStore } from '@/stores/app/appStore';
 import { useBillsStore } from '@/stores/bills/billsStore';
-import { calculateMonthlyExpenses } from '@/stores/bills/billsStore.helpers';
-import BillCardOverview from './_components/BillCardOverview/BillCardOverview';
+import BillsOverview from './_components/BillsOverview';
 import BillsTable from './_components/BillsTable/BillsTable';
+import CalendarView from './_components/CalendarView';
+import ControlBar from './_components/ControlBar';
+import classes from './page.module.css';
 
 const Bills = () => {
   const year = useAppStore((state) => state.year);
-  const { bills, total, transferPlan, highest, lowest, getAllOfYear } = useBillsStore(
+  const { bills, getAllOfYear } = useBillsStore(
     useShallow((state) => ({
       bills: state.bills,
-      highest: state.highest,
-      lowest: state.lowest,
-      transferPlan: state.transferPlan,
-      total: state.total,
-      addBill: state.add,
-      deleteBill: state.delete,
       getAllOfYear: state.getAllOfYear,
     }))
   );
 
-  const [isScrolled, setIsScrolled] = useToggle([true, false]);
+  const [search, setSearch] = useState('');
+  const [debouncedSearch] = useDebouncedValue(search, 200);
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
 
   useEffect(() => {
     getAllOfYear(year);
   }, []);
 
-  const monthlyAmounts = calculateMonthlyExpenses(bills[year]);
-  const billsChartData = Object.keys(monthlyAmounts).map((month) => ({
-    month: getMonthLabel(parseInt(month) as TMonthIndex),
-    amount: monthlyAmounts[parseInt(month) as keyof typeof monthlyAmounts],
-  }));
-
   return (
-    <Box w="100%" h="100vh" p="lg" style={{ overflowY: 'scroll' }}>
-      <Stack>
-        <Box display="grid" style={{ gridTemplateColumns: '3fr 1fr', columnGap: '1em' }}>
-          <Paper bg="dark.7" px="xl" py="md" bd="solid 1px dark.7" radius="md">
-            <Title order={3} mb="lg">
-              Fordeling Overblik
-            </Title>
-            <BarChart
-              onClick={() => setIsScrolled()}
-              h={isScrolled ? 100 : 333}
-              w={'100%'}
-              data={billsChartData}
-              dataKey="month"
-              style={{ transition: 'height 0.2s ease' }}
-              series={[{ name: 'amount', color: 'indigo.6' }]}
-              barProps={{
-                barSize: 20,
-              }}
-              gridAxis="x"
-              withYAxis={false}
-              // yAxisProps={{ domain: [lowest - 10, highest] }}
-            />
-          </Paper>
-          <Stack gap={isScrolled ? 0 : 'md'}>
-            <BillCardOverview
-              condensed={isScrolled}
-              value={total}
-              description={'Totalt i år'}
-              icon={IconMoneybag}
-            />
-            <BillCardOverview
-              condensed={isScrolled}
-              value={highest}
-              description={'Højeste måned'}
-              icon={IconCoins}
-            />
-            <BillCardOverview
-              condensed={isScrolled}
-              value={lowest}
-              description={'Laveste måned'}
-              icon={IconWallet}
-            />
-            <BillCardOverview
-              condensed={isScrolled}
-              value={transferPlan.monthly}
-              secondaryValue={transferPlan.start}
-              description={'Fast Overførsel (første)'}
-              icon={IconCalendarWeek}
-            />
-          </Stack>
-        </Box>
-        <Paper bg="dark.7" p="xl" bd="solid 1px dark.7" radius="md" h="100%">
-          <BillsTable title="Regninger" bills={bills[year] || {}} />
+    <Stack gap="lg" className={classes.page}>
+      <Box className={classes.head}>
+        <ControlBar
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+          search={search}
+          onSearchChange={setSearch}
+        />
+      </Box>
+
+      {viewMode === 'list' && (
+        <Paper className={classes.table} radius="md" p="sm">
+          <BillsTable title="Regninger" bills={bills[year] || {}} search={debouncedSearch} />
         </Paper>
-      </Stack>
-    </Box>
+      )}
+
+      {viewMode === 'calendar' && (
+        <Box className={classes.calendar}>
+          <CalendarView bills={bills[year] || {}} year={year} />
+        </Box>
+      )}
+
+      <Box className={classes.overview}>
+        <BillsOverview year={year} />
+      </Box>
+    </Stack>
   );
 };
 

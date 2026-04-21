@@ -1,15 +1,19 @@
-import { IconDots } from '@tabler/icons-react';
+import { IconDots, IconDotsVertical } from '@tabler/icons-react';
 import { useShallow } from 'zustand/shallow';
 import { ActionIcon } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
 import { useAppStore } from '@/stores/app/appStore';
 import { useBillsStore } from '@/stores/bills/billsStore';
 import BillModal, { TBillModalProps } from './BillModal';
 import { TBillRow } from './BillsTable.types';
 
-const EditBill = ({ bill }: { bill: TBillRow }) => {
-  const [opened, { open, close }] = useDisclosure(false);
+type TEditBillProps = {
+  bill: TBillRow;
+  opened: boolean;
+  open: () => void;
+  close: () => void;
+};
 
+const EditBill = ({ bill, opened, open, close }: TEditBillProps) => {
   const { edit, deleteBill } = useBillsStore(
     useShallow((state) => ({
       edit: state.edit,
@@ -43,6 +47,7 @@ const EditBill = ({ bill }: { bill: TBillRow }) => {
     );
     close();
   };
+
   const handleDelete = () => {
     deleteBill(bill.id);
     close();
@@ -50,31 +55,41 @@ const EditBill = ({ bill }: { bill: TBillRow }) => {
 
   return (
     <>
-      <ActionIcon radius="xl" variant="subtle" color="dark" onClick={open}>
-        <IconDots />
-      </ActionIcon>
-      <BillModal
-        data={{
-          name: bill.name,
-          amount: bill.amount,
-          category: bill.category,
-          segment: bill.segment,
-          due: bill.due,
-          company: {
-            id: bill.companyId,
-            name: bill.companyName,
-            domain: bill.companyDomain,
-            description: '',
-          },
+      <ActionIcon
+        radius="xl"
+        variant="subtle"
+        color="dark"
+        onClick={(e) => {
+          e.stopPropagation();
+          open();
         }}
-        onLeftAction={handleDelete}
-        onRightAction={(val) => handleEdit(val)}
-        close={close}
-        leftActionLabel="Slet"
-        rightActionLabel="Redigér"
-        title="Redigér Regning"
-        opened={opened}
-      />
+      >
+        <IconDotsVertical />
+      </ActionIcon>
+      <div onClick={(e) => e.stopPropagation()}>
+        <BillModal
+          data={{
+            name: bill.name,
+            amount: bill.amount,
+            category: bill.category,
+            segment: bill.segment,
+            due: bill.due,
+            company: {
+              id: bill.companyId,
+              name: bill.companyName,
+              domain: bill.companyDomain,
+              description: '',
+            },
+          }}
+          onLeftAction={handleDelete}
+          onRightAction={(val) => handleEdit(val)}
+          close={close}
+          leftActionLabel="Slet"
+          rightActionLabel="Redigér"
+          title="Redigér Regning"
+          opened={opened}
+        />
+      </div>
     </>
   );
 };

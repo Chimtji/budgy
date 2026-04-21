@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { IconSortAscending, IconSortDescending } from '@tabler/icons-react';
-import { Center, Group, MantineStyleProps, Table, Text, UnstyledButton } from '@mantine/core';
+import { Center, Group, MantineStyleProps, rem, Table, Text, UnstyledButton } from '@mantine/core';
 import { useToggle } from '@mantine/hooks';
 import { TBillRow } from './BillsTable.types';
 import classes from './BillsTable.module.css';
@@ -15,6 +15,7 @@ type TTableHeadProps = {
   sorted?: boolean;
   onSort?: () => void;
   w?: string;
+  mw?: string;
 };
 
 const BillsTableHead = ({ onSort }: THeadProps) => {
@@ -33,20 +34,20 @@ const BillsTableHead = ({ onSort }: THeadProps) => {
     onSort?.(sortColumn, sortDirection);
   }, [sortColumn, sortDirection]);
 
-  const TableHead = ({ children, sorted, direction, onSort, w }: TTableHeadProps) => {
+  const TableHead = ({ children, sorted, direction, onSort, w, mw = '50px' }: TTableHeadProps) => {
     const Icon = direction === 'asc' ? IconSortAscending : IconSortDescending;
 
     return (
-      <Table.Th className={classes.headItem} w={w}>
+      <Table.Th className={classes.headItem} w={w} miw={rem(mw)}>
         <UnstyledButton onClick={onSort} className={classes.control}>
           <Group>
             <Text fw={sorted ? 700 : 400} fz="sm">
               {children}
             </Text>
 
-            <Center className={classes.icon} opacity={!sorted ? 0 : 1}>
+            {/* <Center className={classes.icon} opacity={!sorted ? 0 : 1}>
               <Icon size={16} stroke={3} />
-            </Center>
+            </Center> */}
           </Group>
         </UnstyledButton>
       </Table.Th>
@@ -60,6 +61,7 @@ const BillsTableHead = ({ onSort }: THeadProps) => {
           sorted={sortColumn === 'amount'}
           direction={sortDirection}
           onSort={() => handleSort('amount')}
+          mw={'120px'}
         >
           Beløb
         </TableHead>
@@ -75,7 +77,7 @@ const BillsTableHead = ({ onSort }: THeadProps) => {
           direction={sortDirection}
           onSort={() => handleSort('companyName')}
         >
-          Firma
+          Modtager
         </TableHead>
         <TableHead
           sorted={sortColumn === 'category'}
@@ -96,7 +98,7 @@ const BillsTableHead = ({ onSort }: THeadProps) => {
           direction={sortDirection}
           onSort={() => handleSort('due')}
         >
-          Betales
+          Betalinger
         </TableHead>
         <TableHead
           sorted={sortColumn === 'status'}

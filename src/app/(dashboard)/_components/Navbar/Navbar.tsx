@@ -3,15 +3,18 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Icon, IconReceipt } from '@tabler/icons-react';
+import { UserButton } from '@neondatabase/auth/react';
+import { Icon, IconCalculator, IconReceipt, IconTag } from '@tabler/icons-react';
 import { useShallow } from 'zustand/shallow';
-import { Box, Group, Select, Stack, Title } from '@mantine/core';
+import { Group, Select, Stack, Title } from '@mantine/core';
 import { useAppStore } from '@/stores/app/appStore';
 import classes from './Navbar.module.css';
 
 const Navbar = () => {
   const pathname = usePathname();
   const [active, setActive] = useState(pathname);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isFooterHovered, setIsFooterHovered] = useState(false);
 
   const { year, setYear } = useAppStore(
     useShallow((state) => ({
@@ -20,7 +23,10 @@ const Navbar = () => {
     }))
   );
 
-  const data = [{ link: '/bills', label: 'Faste Regninger', icon: IconReceipt }];
+  const data = [
+    { link: '/bills', label: 'Faste Regninger', icon: IconReceipt },
+    { link: '/categories', label: 'Kategorier', icon: IconTag },
+  ];
 
   const NavItem = ({
     link,
@@ -44,11 +50,10 @@ const Navbar = () => {
         onClick={(event) => {
           setActive(link);
         }}
+        title={label}
       >
         <Icon className={classes.linkIcon} stroke={1.5} />
-        <Box component="span" visibleFrom="xl">
-          {label}
-        </Box>
+        <span className={classes.linkLabel}>{label}</span>
       </Link>
     );
   };
@@ -57,25 +62,53 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className={classes.navbar}>
+      <nav
+        className={classes.navbar}
+        data-expanded={isHovered || isFooterHovered ? true : undefined}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
         <div className={classes.navbarMain}>
           <Group className={classes.header} justify="space-between">
-            <Title hiddenFrom="xl">B</Title>
-            <Title visibleFrom="xl">Budgy</Title>
+            <Title>B</Title>
           </Group>
           <Stack gap="xs">
-            <Select
+            {/* <Select
               placeholder="Vælg år"
               data={lastTenYears}
               defaultValue={year.toString()}
               onChange={(val) => setYear(parseInt(val!))}
-            />
+            /> */}
             {data.map((item) => (
               <NavItem {...item} key={item.label} />
             ))}
           </Stack>
         </div>
+        <div
+          className={classes.footer}
+          onMouseEnter={() => setIsFooterHovered(true)}
+          onMouseLeave={() => setIsFooterHovered(false)}
+        >
+          <UserButton className={classes.userButton} variant="ghost" />
+        </div>
       </nav>
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: isHovered || isFooterHovered ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0)',
+          zIndex: 500,
+          pointerEvents: isHovered || isFooterHovered ? 'auto' : 'none',
+          transition: 'background-color 0.3s ease',
+        }}
+        onClick={() => {
+          setIsHovered(false);
+          setIsFooterHovered(false);
+        }}
+      />
     </>
   );
 };

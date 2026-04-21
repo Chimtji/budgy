@@ -32,6 +32,7 @@ export type TBillsStateActions = {
   edit: (bill: TBill, id: number) => void;
   delete: (id: number) => void;
   getAllOfYear: (year: number) => void;
+  clean: () => Promise<void>;
 };
 
 export type TBillsStore = TBillsState & TBillsStateActions;

@@ -1,21 +1,9 @@
 import { useState } from 'react';
-import {
-  Button,
-  Center,
-  Checkbox,
-  Fieldset,
-  Group,
-  Modal,
-  NumberInput,
-  Stack,
-  TextInput,
-  Title,
-} from '@mantine/core';
+import { Button, Center, Drawer, Fieldset, Group, NumberInput, Stack, TextInput, Title } from '@mantine/core';
 import CategorySelector from '@/app/(dashboard)/_components/CategorySelector/CategorySelector';
 import CompanySelector from '@/app/(dashboard)/_components/CompanySelector/CompanySelector';
 import SegmentSelector from '@/app/(dashboard)/_components/SegmentSelector/SegmentSelector';
-import { toMonthIndexNumbers, toMonthIndexStrings } from '@/data/helpers';
-import months from '@/data/months.json';
+import CadenceSelector from '@/app/(dashboard)/_components/CadenceSelector/CadenceSelector';
 import { TCategoryName, TMonthIndex, TSegmentName } from '@/data/types';
 import { TCompany } from '@/stores/companies/companiesStore';
 
@@ -53,7 +41,7 @@ const BillModal = ({
   const [amount, setAmount] = useState<number | string>(data?.amount || 0);
   const [segment, setSegment] = useState<TSegmentName>(data?.segment || 'uncategorized');
   const [category, setCategory] = useState<TCategoryName>(data?.category || 'uncategorized');
-  const [due, setDue] = useState<string[]>(toMonthIndexStrings(data?.due || []));
+  const [due, setDue] = useState<TMonthIndex[]>(data?.due || []);
   const [company, setCompany] = useState<TCompany>(
     data?.company || {
       name: '',
@@ -64,67 +52,65 @@ const BillModal = ({
   );
 
   const handleRightAction = () => {
-    onRightAction?.({ amount, segment, category, due: toMonthIndexNumbers(due), company, name });
+    onRightAction?.({ amount, segment, category, due, company, name });
+    close();
   };
 
   const handleLeftAction = () => {
-    onLeftAction?.({ amount, segment, category, due: toMonthIndexNumbers(due), company, name });
+    onLeftAction?.({ amount, segment, category, due, company, name });
+    close();
   };
 
   return (
-    <Modal
-      size="60%"
+    <Drawer
       opened={opened}
       onClose={close}
-      centered
+      position="right"
+      size="lg"
+      title={<Title order={2}>{title}</Title>}
       zIndex={300}
-      closeButtonProps={{ onClick: close }}
     >
-      <Stack pl="xl" pr="xl" pb="md">
-        <Title order={3}>{title}</Title>
-        <Group grow align="start">
-          <Fieldset legend="Pris" h="100%">
-            <Stack>
-              <NumberInput value={amount} label="Beløb" suffix=" Kr." onChange={setAmount} />
-              <Checkbox.Group label="Betales" onChange={setDue} value={due}>
-                <Group mt="xs">
-                  {Object.entries(months).map(([id, data]) => (
-                    <Checkbox value={id} label={data.label} key={id as string} />
-                  ))}
-                </Group>
-              </Checkbox.Group>
-            </Stack>
-          </Fieldset>
-          <Fieldset legend="Budgettering" h="100%">
+      <Stack pl="xl" pr="xl" pb="md" pt="md" gap="md" h="100%">
+        <Stack gap="md" style={{ flex: 1 }}>
+          <Fieldset legend="Regning" h="100%">
             <Stack>
               <TextInput
                 value={name}
                 label="Navn"
                 onChange={(event) => setName(event.currentTarget.value)}
               />
-              <CompanySelector onChange={(chosen) => setCompany(chosen)} />
-              <CategorySelector onChange={(chosen) => setCategory(chosen.value)} />
+              <CompanySelector value={company} onChange={(chosen) => setCompany(chosen)} />
+            </Stack>
+          </Fieldset>
+          <Fieldset legend="Betaling" h="100%">
+            <Stack>
+              <NumberInput value={amount} label="Beløb" suffix=" Kr." onChange={setAmount} />
+              <CadenceSelector value={due} onChange={setDue} />
+            </Stack>
+          </Fieldset>
+          <Fieldset legend="Budgettering" h="100%">
+            <Stack>
+              <CategorySelector value={category} onChange={(chosen) => setCategory(chosen.value)} />
               <SegmentSelector
                 category={category}
+                value={segment}
                 onChange={(chosen) => setSegment(chosen.value)}
               />
             </Stack>
           </Fieldset>
-        </Group>
-        <Center>
-          <Group>
-            {leftActionLabel && (
-              <Button variant="subtle" onClick={handleLeftAction}>
-                {leftActionLabel}
-              </Button>
-            )}
-            <Button variant="filled" onClick={handleRightAction}>
-              {rightActionLabel}
+        </Stack>
+        <Group justify="flex-end">
+          {leftActionLabel && (
+            <Button variant="subtle" onClick={handleLeftAction}>
+              {leftActionLabel}
             </Button>
-          </Group>
-        </Center>
+          )}
+          <Button variant="filled" onClick={handleRightAction}>
+            {rightActionLabel}
+          </Button>
+        </Group>
       </Stack>
-    </Modal>
+    </Drawer>
   );
 };
 

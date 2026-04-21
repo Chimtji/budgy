@@ -20,7 +20,13 @@ import {
 } from '@/stores/companies/companiesStore';
 import EditModal from './EditModal';
 
-const CompanySelector = ({ onChange }: { onChange?: (val: TCompany) => void }) => {
+const CompanySelector = ({
+  onChange,
+  value: externalValue,
+}: {
+  onChange?: (val: TCompany) => void;
+  value?: TCompany;
+}) => {
   const combobox = useCombobox({
     onDropdownClose: () => {
       combobox.resetSelectedOption();
@@ -43,6 +49,13 @@ const CompanySelector = ({ onChange }: { onChange?: (val: TCompany) => void }) =
   const { addCompany, searchCompany } = useCompaniesStore(
     useShallow((state) => ({ addCompany: state.add, searchCompany: state.search }))
   );
+
+  useEffect(() => {
+    if (externalValue) {
+      setSelected(externalValue);
+      setSearch(externalValue.name);
+    }
+  }, [externalValue]);
 
   useEffect(() => {
     setDebouncedSearch(search);

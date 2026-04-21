@@ -28,7 +28,7 @@ const CreateBill = ({}) => {
       amount: Number(amount),
       category,
       segment,
-      due: due as any,
+      due,
       companyId: company.id,
       companyName: company.name,
       companyDomain: company.domain,

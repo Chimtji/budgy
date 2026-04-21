@@ -9,6 +9,7 @@ import { deleteBill } from '@/service/database/bills/deleteBill';
 import { editBill } from '@/service/database/bills/editBill';
 import { getAllOfYear } from '@/service/database/bills/getAll';
 import { useAppStore } from '../app/appStore';
+import { DEFAULT_STATE } from './billsStore.defaults';
 import { calculateMonthlyExpenses } from './billsStore.helpers';
 import { TBillsStore } from './billsStore.types';
 
@@ -18,14 +19,7 @@ export const useBillsStore = create<TBillsStore>()(
   subscribeWithSelector(
     persist<TBillsStore>(
       (set) => ({
-        bills: {},
-        transferPlan: {
-          monthly: 0,
-          start: 0,
-        },
-        highest: 0,
-        lowest: 0,
-        total: 0,
+        ...DEFAULT_STATE,
         add: (bill) =>
           addBill(bill).then((result) => {
             if (result.success) {
@@ -77,6 +71,8 @@ export const useBillsStore = create<TBillsStore>()(
         getAllOfYear: (year) => {
           const state = useBillsStore.getState();
 
+          console.log('Fetching bills for year');
+
           const billsOfYear = state?.bills?.[year];
           if (billsOfYear && Object.keys(billsOfYear).length > 0) {
             return; // Bills already fetched
@@ -93,6 +89,16 @@ export const useBillsStore = create<TBillsStore>()(
               showErrorNotification({ title: 'Fetch Bills Error', message: result.error });
             }
           });
+        },
+        clean: async () => {
+          set(
+            produce((state: TBillsStore) => {
+              Object.assign(state, DEFAULT_STATE);
+            })
+          );
+
+          console.log('done cleaning bills');
+          return Promise.resolve();
         },
       }),
       { name: STORE_NAME } satisfies PersistOptions<TBillsStore>

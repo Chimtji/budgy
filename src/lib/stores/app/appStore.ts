@@ -13,12 +13,24 @@ export const useAppStore = create<TAppStore>()(
     persist<TAppStore>(
       (set) => ({
         year: new Date().getFullYear(),
+        userId: null,
         setYear: (year: number) => {
           set(
             produce((state) => {
               state.year = year;
             })
           );
+        },
+        setUserId: (userId: string | null) => {
+          set(
+            produce((state) => {
+              state.userId = userId;
+            })
+          );
+        },
+        cleanData: async () => {
+          await useBillsStore.getState().clean();
+          return Promise.resolve();
         },
       }),
       { name: STORE_NAME } satisfies PersistOptions<TAppStore>

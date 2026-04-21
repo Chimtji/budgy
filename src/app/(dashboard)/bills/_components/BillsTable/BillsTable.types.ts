@@ -4,6 +4,7 @@ import { TBills } from '@/stores/bills/billsStore.types';
 export type TBillsTableProps = {
   bills: TBills;
   title: string;
+  search: string;
 };
 
 export type TBillRow = {

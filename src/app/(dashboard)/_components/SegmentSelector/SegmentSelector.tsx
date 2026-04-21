@@ -1,14 +1,15 @@
 import { useEffect, useState } from 'react';
-import { ComboboxItem, Select } from '@mantine/core';
+import { Select } from '@mantine/core';
 import { getSegmentsOfCategory } from '@/data/helpers';
 import { TCategoryName, TSegmentName } from '@/data/types';
 
 type TSegmentSelectorProps = {
   category?: TCategoryName;
+  value?: TSegmentName;
   onChange?: (option: { value: TSegmentName; label: string }) => void;
 };
 
-const SegmentSelector = ({ onChange, category }: TSegmentSelectorProps) => {
+const SegmentSelector = ({ onChange, category, value }: TSegmentSelectorProps) => {
   const [segment, setSegment] = useState<{ value: TSegmentName; label: string }>({
     value: 'uncategorized',
     label: 'ukategoriseret',
@@ -20,14 +21,19 @@ const SegmentSelector = ({ onChange, category }: TSegmentSelectorProps) => {
   };
 
   useEffect(() => {
-    setSegment({ value: 'uncategorized', label: 'ukategoriseret' });
-  }, [category]);
+    if (!value) {
+      setSegment({ value: 'uncategorized', label: 'ukategoriseret' });
+    }
+  }, [category, value]);
+
+  const currentValue = value ?? segment.value;
 
   return (
     <Select
-      value={segment.value}
+      value={currentValue}
       data={category ? getSegmentsOfCategory(category) : []}
-      onChange={(value, option) => {
+      onChange={(val, option) => {
+        if (!option) return;
         handleChange({ value: option.value as TSegmentName, label: option.label });
       }}
       label="Segment"
