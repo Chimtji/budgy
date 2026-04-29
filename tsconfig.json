@@ -18,6 +18,9 @@
     "incremental": true,
     "paths": {
       "@/service/database/*": ["./src/service/database/*"],
+      "@/service/csv/*": ["./src/service/csv/*"],
+      "@/service/categorization/*": ["./src/service/categorization/*"],
+      "@/service/types": ["./src/service/types.ts"],
       "@/app/*": ["./src/app/*"],
       "@/service": ["./src/service/index.ts"],
       "@/service/client": ["./src/service/client/index.ts"],

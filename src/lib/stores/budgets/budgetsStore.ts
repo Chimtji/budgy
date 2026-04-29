@@ -39,7 +39,7 @@ export const useBudgetsStore = create<TBudgetsStore>()(
           if (result.success) {
             const budgetMap = new Map<string, number>();
 
-            result.data.forEach((budget) => {
+            result.data.forEach((budget: any) => {
               const key = getCellKey(budget.categoryId, budget.segmentId, budget.month);
               budgetMap.set(key, budget.amount);
             });
@@ -81,7 +81,7 @@ export const useBudgetsStore = create<TBudgetsStore>()(
             return; // Nothing to save
           }
 
-          const budgetsToSave = Array.from(state.dirty).map((key) => {
+          const budgetsToSave = Array.from(state.dirty as Set<string>).map((key) => {
             const [categoryId, segmentId, month] = key.split('-');
             const amount = state.budgets.get(key) || 0;
             return {
@@ -93,7 +93,7 @@ export const useBudgetsStore = create<TBudgetsStore>()(
             };
           });
 
-          const result = await upsertBudgetsForYear(budgetsToSave);
+          const result = await upsertBudgetsForYear(state.year, budgetsToSave);
 
           if (result.success) {
             set(

@@ -1,0 +1,27 @@
+.filterGroup {
+  display: flex;
+  gap: var(--mantine-spacing-lg);
+  margin-bottom: var(--mantine-spacing-lg);
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 200px;
+}
+
+.table {
+  /* Using Mantine defaults */
+}
+
+.tableRow {
+  &:hover {
+    background-color: var(--mantine-color-gray-0);
+  }
+}
+
+.emptyState {
+  text-align: center;
+  padding: var(--mantine-spacing-xl) var(--mantine-spacing-md);
+}

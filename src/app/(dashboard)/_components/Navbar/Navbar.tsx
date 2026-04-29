@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { UserButton } from '@neondatabase/auth/react';
-import { Icon, IconCalculator, IconReceipt, IconTag } from '@tabler/icons-react';
+import { Icon, IconCalculator, IconCreditCard, IconReceipt, IconTag, IconChartBar } from '@tabler/icons-react';
 import { useShallow } from 'zustand/shallow';
 import { Group, Select, Stack, Title } from '@mantine/core';
 import { useAppStore } from '@/stores/app/appStore';
@@ -24,7 +24,9 @@ const Navbar = () => {
   );
 
   const data = [
-    { link: '/bills', label: 'Faste Regninger', icon: IconReceipt },
+    { link: '/overview', label: 'Økonomi', icon: IconChartBar },
+    { link: '/transactions', label: 'Transaktioner', icon: IconCreditCard },
+    { link: '/bills', label: 'Abonnementer', icon: IconReceipt },
     { link: '/categories', label: 'Kategorier', icon: IconTag },
   ];
 
