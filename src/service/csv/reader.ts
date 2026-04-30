@@ -13,9 +13,12 @@ export async function parseCSVFile(file: File): Promise<ParsedTransaction[]> {
     return [];
   }
 
+  // Detect delimiter (comma or tab)
+  const delimiter = detectDelimiter(lines[0]);
+
   // Parse header row to get actual column names
   const headerLine = lines[0];
-  const headerNames = parseCSVLineToArray(headerLine);
+  const headerNames = parseCSVLineToArray(headerLine, delimiter);
 
   // Detect bank format based on header names
   const format = detectBankFormat(headerNames);
@@ -28,7 +31,7 @@ export async function parseCSVFile(file: File): Promise<ParsedTransaction[]> {
     if (!line) continue; // Skip empty lines
 
     try {
-      const rowValues = parseCSVLineToArray(line);
+      const rowValues = parseCSVLineToArray(line, delimiter);
       const rowObj = createRowObject(headerNames, rowValues);
 
       if (
@@ -73,7 +76,30 @@ export async function parseCSVFile(file: File): Promise<ParsedTransaction[]> {
   return transactions;
 }
 
-function parseCSVLineToArray(line: string): string[] {
+function detectDelimiter(headerLine: string): string {
+  // Count tabs and commas (excluding those in quotes)
+  let tabCount = 0;
+  let commaCount = 0;
+  let inQuotes = false;
+
+  for (let i = 0; i < headerLine.length; i++) {
+    const char = headerLine[i];
+    if (char === '"') {
+      inQuotes = !inQuotes;
+    } else if (!inQuotes) {
+      if (char === '\t') {
+        tabCount++;
+      } else if (char === ',') {
+        commaCount++;
+      }
+    }
+  }
+
+  // If more tabs than commas, it's tab-separated
+  return tabCount > commaCount ? '\t' : ',';
+}
+
+function parseCSVLineToArray(line: string, delimiter: string = ','): string[] {
   const fields: string[] = [];
   let current = '';
   let inQuotes = false;
@@ -82,7 +108,7 @@ function parseCSVLineToArray(line: string): string[] {
     const char = line[i];
     if (char === '"') {
       inQuotes = !inQuotes;
-    } else if (char === ',' && !inQuotes) {
+    } else if (char === delimiter && !inQuotes) {
       fields.push(current.trim().replace(/^"|"$/g, ''));
       current = '';
     } else {
