@@ -21,6 +21,15 @@ export interface CSVFormat {
 
 // Bank-specific formats
 export const BANK_FORMATS: Record<string, CSVFormat> = {
+  danske_export: {
+    name: 'Danske Bank (Detailed Export)',
+    detectPatterns: ['Eksportkonto', 'Dato', 'Tekst', 'Beløb'],
+    dateColumn: 'Dato',
+    amountColumn: 'Beløb',
+    descriptionColumn: 'Tekst',
+    merchantColumn: 'Tekst', // Use Tekst as merchant source, extract first part
+    currencyColumn: 'Valuta',
+  },
   danske: {
     name: 'Danske Bank',
     detectPatterns: ['Dato', 'Beløb', 'Beskrivelse', 'Modtager'],

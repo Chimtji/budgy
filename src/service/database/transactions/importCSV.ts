@@ -2,9 +2,9 @@
 
 import crypto from 'crypto';
 import { categorizeTransaction } from '@/service/categorization/engine';
+import { ParsedTransaction } from '@/service/csv/parser';
 import { isAuthenticated } from '@/service/database/auth/isAuthenticated';
 import { sqlClient } from '@/service/database/auth/server';
-import { ParsedTransaction } from '@/service/csv/parser';
 import { TServerResponse } from '@/service/types';
 
 export const importTransactionsFromCSV = async (
@@ -48,8 +48,7 @@ export const importTransactionsFromCSV = async (
         }
 
         // Categorize transaction
-        const categoryText =
-          tx.description || tx.merchantName || 'Ukendt transaktion';
+        const categoryText = tx.description || tx.merchantName || 'Ukendt transaktion';
         const categorization = await categorizeTransaction(userId, categoryText);
 
         // Insert transaction
@@ -78,7 +77,10 @@ export const importTransactionsFromCSV = async (
 
         imported++;
       } catch (error) {
-        console.error('Failed to import transaction:', error instanceof Error ? error.message : String(error));
+        console.error(
+          'Failed to import transaction:',
+          error instanceof Error ? error.message : String(error)
+        );
         errors++;
       }
     }

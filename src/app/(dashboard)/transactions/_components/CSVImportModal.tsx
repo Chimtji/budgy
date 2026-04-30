@@ -1,12 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { Button, Card, Group, Stack, Text, Progress, Badge, Table } from '@mantine/core';
 import { IconUpload } from '@tabler/icons-react';
-import { parseCSVFile } from '@/service/csv/reader';
-import { importTransactionsFromCSV } from '@/service/database/transactions/importCSV';
+import { Badge, Button, Card, Group, Progress, Stack, Table, Text } from '@mantine/core';
 import { showErrorNotification, showSuccessNotification } from '@/notifications/feedback';
 import { ParsedTransaction } from '@/service/csv/parser';
+import { parseCSVFile } from '@/service/csv/reader';
+import { importTransactionsFromCSV } from '@/service/database/transactions/importCSV';
 
 export default function CSVImportModal() {
   const [isLoading, setIsLoading] = useState(false);

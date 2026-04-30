@@ -1,8 +1,8 @@
 import {
   detectBankFormat,
+  ParsedTransaction,
   parseTransactionAmount,
   parseTransactionDate,
-  ParsedTransaction,
 } from './parser';
 
 export async function parseCSVFile(file: File): Promise<ParsedTransaction[]> {
@@ -46,13 +46,21 @@ export async function parseCSVFile(file: File): Promise<ParsedTransaction[]> {
       const { amount, type } = parseTransactionAmount(amountStr, typeStr);
       const transactionDate = parseTransactionDate(dateStr);
 
+      // Extract merchant name - handle formats like "Forretning: MCDHILLEROD ..."
+      let merchantName = rowObj[format.merchantColumn];
+      if (merchantName && merchantName.includes(':')) {
+        // For Danske Export format, extract the part after the colon
+        const parts = merchantName.split(':');
+        const afterColon = parts[1]?.trim() || '';
+        // Get first meaningful word
+        merchantName = afterColon.split(/[\s]+/)[0] || merchantName;
+      }
+
       transactions.push({
         transactionDate,
-        merchantName: rowObj[format.merchantColumn],
+        merchantName,
         amount: type === 'debit' ? -amount : amount,
-        description: format.descriptionColumn
-          ? rowObj[format.descriptionColumn]
-          : undefined,
+        description: format.descriptionColumn ? rowObj[format.descriptionColumn] : undefined,
         currency: format.currencyColumn ? rowObj[format.currencyColumn] : 'DKK',
         type,
       });
@@ -86,10 +94,7 @@ function parseCSVLineToArray(line: string): string[] {
   return fields;
 }
 
-function createRowObject(
-  headerNames: string[],
-  values: string[]
-): Record<string, string> {
+function createRowObject(headerNames: string[], values: string[]): Record<string, string> {
   const result: Record<string, string> = {};
   headerNames.forEach((header, idx) => {
     result[header] = values[idx] || '';
