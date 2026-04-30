@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { IconUpload } from '@tabler/icons-react';
-import { Badge, Button, Card, Group, Progress, Stack, Table, Text } from '@mantine/core';
+import { IconUpload, IconAlertCircle, IconCheck } from '@tabler/icons-react';
+import { Alert, Badge, Button, Card, Group, Progress, Stack, Table, Text, Loader } from '@mantine/core';
 import { showErrorNotification, showSuccessNotification } from '@/notifications/feedback';
 import { ParsedTransaction } from '@/service/csv/parser';
 import { parseCSVFile } from '@/service/csv/reader';
@@ -12,12 +12,14 @@ export default function CSVImportModal() {
   const [isLoading, setIsLoading] = useState(false);
   const [previewTransactions, setPreviewTransactions] = useState<ParsedTransaction[]>([]);
   const [fileName, setFileName] = useState<string>('');
-  const [step, setStep] = useState<'upload' | 'preview' | 'importing'>('upload');
+  const [step, setStep] = useState<'upload' | 'preview' | 'importing' | 'success'>('upload');
   const [importResult, setImportResult] = useState<{
     imported: number;
     duplicates: number;
     errors: number;
   } | null>(null);
+  const [statusMessage, setStatusMessage] = useState<string>('');
+  const [parseError, setParseError] = useState<string>('');
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -25,26 +27,36 @@ export default function CSVImportModal() {
 
     setFileName(file.name);
     setIsLoading(true);
+    setStatusMessage('Læser CSV-fil...');
+    setParseError('');
 
     try {
+      setStatusMessage(`Parser ${file.name}...`);
       const transactions = await parseCSVFile(file);
 
       if (transactions.length === 0) {
+        const errorMsg = `Kunne ikke finde nogen transaktioner i ${file.name}. Tjek at CSV-filen har de rigtige kolonne-navne (Dato, Beløb, Tekst/Modtager, etc.)`;
+        setParseError(errorMsg);
         showErrorNotification({
           title: 'Parsing fejlede',
-          message: 'Ingen transaktioner fundet i CSV-filen',
+          message: errorMsg,
         });
+        setStatusMessage('');
         setIsLoading(false);
         return;
       }
 
+      setStatusMessage(`${transactions.length} transaktioner fundet og parsed!`);
       setPreviewTransactions(transactions);
       setStep('preview');
     } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Ukendt fejl ved parsing af CSV';
+      setParseError(errorMsg);
       showErrorNotification({
         title: 'CSV Parsing fejlede',
-        message: error instanceof Error ? error.message : 'Ukendt fejl',
+        message: errorMsg,
       });
+      setStatusMessage('');
     } finally {
       setIsLoading(false);
     }
@@ -53,27 +65,38 @@ export default function CSVImportModal() {
   const handleImport = async () => {
     setStep('importing');
     setIsLoading(true);
+    setStatusMessage('Starter import til database...');
 
     try {
       const result = await importTransactionsFromCSV(previewTransactions);
 
       if (result.success && result.data) {
         setImportResult(result.data);
+        setStep('success');
+        setStatusMessage(
+          `✓ Import fuldført! ${result.data.imported} transaktioner importeret, ${result.data.duplicates} dubletter, ${result.data.errors} fejl`
+        );
         showSuccessNotification({
           title: 'Import fuldført',
-          message: `${result.data.imported} transaktioner importeret`,
+          message: `${result.data.imported} transaktioner er nu gemt i databasen`,
         });
       } else if (!result.success) {
+        const errorMsg = (result as any).error || 'Ukendt fejl';
+        setStatusMessage('Import fejlede!');
         showErrorNotification({
           title: 'Import fejlede',
-          message: (result as any).error || 'Ukendt fejl',
+          message: errorMsg,
         });
+        setStep('preview');
       }
     } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Ukendt fejl';
+      setStatusMessage('Import fejlede!');
       showErrorNotification({
         title: 'Import fejlede',
-        message: error instanceof Error ? error.message : 'Ukendt fejl',
+        message: errorMsg,
       });
+      setStep('preview');
     } finally {
       setIsLoading(false);
     }
@@ -84,6 +107,8 @@ export default function CSVImportModal() {
     setPreviewTransactions([]);
     setFileName('');
     setImportResult(null);
+    setStatusMessage('');
+    setParseError('');
   };
 
   if (step === 'upload') {
@@ -99,13 +124,30 @@ export default function CSVImportModal() {
             </Text>
           </div>
 
+          {parseError && (
+            <Alert icon={<IconAlertCircle />} color="red">
+              <Stack gap="xs">
+                <Text fw={600}>Parsing fejlede</Text>
+                <Text size="sm">{parseError}</Text>
+              </Stack>
+            </Alert>
+          )}
+
+          {statusMessage && (
+            <Group gap="xs">
+              <Loader size="sm" />
+              <Text size="sm">{statusMessage}</Text>
+            </Group>
+          )}
+
           <div
             style={{
               border: '2px dashed #868e96',
               borderRadius: '8px',
               padding: '24px',
               textAlign: 'center',
-              cursor: 'pointer',
+              cursor: isLoading ? 'not-allowed' : 'pointer',
+              opacity: isLoading ? 0.6 : 1,
               transition: 'all 0.2s',
             }}
           >
@@ -117,11 +159,11 @@ export default function CSVImportModal() {
               style={{ display: 'none' }}
               id="csv-upload"
             />
-            <label htmlFor="csv-upload" style={{ cursor: 'pointer' }}>
+            <label htmlFor="csv-upload" style={{ cursor: isLoading ? 'not-allowed' : 'pointer' }}>
               <Stack gap="xs" align="center">
-                <IconUpload size={32} />
+                {isLoading ? <Loader size={32} /> : <IconUpload size={32} />}
                 <div>
-                  <Text fw={500}>Klik for at vælge fil eller træk CSV-fil hen</Text>
+                  <Text fw={500}>{isLoading ? 'Parser CSV-fil...' : 'Klik for at vælge fil eller træk CSV-fil hen'}</Text>
                   <Text size="sm" c="dimmed">
                     Understøtter: Danske Bank, Nordea, Revolut, Wise og generiske CSV-filer
                   </Text>
@@ -131,7 +173,7 @@ export default function CSVImportModal() {
           </div>
 
           <Text size="xs" c="dimmed">
-            Kun CSV-filer er understøttet. Transaktioner vil blive automatisk kategoriseret.
+            Kun CSV-filer er understøttet. Transaktioner bliver automatisk kategoriseret.
           </Text>
         </Stack>
       </Card>
@@ -147,9 +189,18 @@ export default function CSVImportModal() {
               Forhåndsvisning
             </Text>
             <Text size="sm" c="dimmed">
-              {fileName} - {previewTransactions.length} transaktioner fundet
+              {fileName} - {previewTransactions.length} transaktioner fundet og klar til import
             </Text>
           </div>
+
+          <Alert color="blue" title="Hvad sker der ved import?">
+            <Stack gap="xs">
+              <Text size="sm">✓ {previewTransactions.length} transaktioner gemmes i databasen</Text>
+              <Text size="sm">✓ Dubletter detekteres og springes over</Text>
+              <Text size="sm">✓ Automatisk kategorisering bliver anvendt</Text>
+              <Text size="sm">✓ Du kan redigere alt efterfølgende</Text>
+            </Stack>
+          </Alert>
 
           <div style={{ overflowX: 'auto' }}>
             <Table striped>
@@ -180,7 +231,7 @@ export default function CSVImportModal() {
 
           {previewTransactions.length > 10 && (
             <Text size="sm" c="dimmed">
-              + {previewTransactions.length - 10} flere transaktioner
+              + {previewTransactions.length - 10} flere transaktioner (vises ikke i forhåndsvisning)
             </Text>
           )}
 
@@ -189,7 +240,7 @@ export default function CSVImportModal() {
               Annuller
             </Button>
             <Button onClick={handleImport} loading={isLoading}>
-              Importer {previewTransactions.length}
+              {isLoading ? 'Importerer...' : `Importér alle ${previewTransactions.length}`}
             </Button>
           </Group>
         </Stack>
@@ -197,15 +248,59 @@ export default function CSVImportModal() {
     );
   }
 
-  if (step === 'importing' && importResult) {
+  if (step === 'importing') {
+    return (
+      <Card withBorder p="lg">
+        <Stack gap="md" align="center">
+          <div style={{ textAlign: 'center' }}>
+            <Text fw={700} size="lg">
+              Importerer transaktioner...
+            </Text>
+            <Text size="sm" c="dimmed">
+              Vent venligst mens dine {previewTransactions.length} transaktioner gemmes til databasen
+            </Text>
+          </div>
+
+          <Loader size="lg" />
+
+          <div style={{ width: '100%' }}>
+            <Progress value={50} animated />
+          </div>
+
+          <Text size="sm" c="dimmed" style={{ textAlign: 'center' }}>
+            {statusMessage || 'Behandler transaktioner...'}
+          </Text>
+        </Stack>
+      </Card>
+    );
+  }
+
+  if (step === 'success' && importResult) {
     return (
       <Card withBorder p="lg">
         <Stack gap="md">
-          <div>
-            <Text fw={700} size="lg">
-              Import fuldført
+          <div style={{ textAlign: 'center' }}>
+            <Group justify="center" mb="md">
+              <IconCheck size={32} color="green" />
+            </Group>
+            <Text fw={700} size="lg" c="green">
+              Import fuldført!
+            </Text>
+            <Text size="sm" c="dimmed">
+              Dine transaktioner er nu gemt i databasen
             </Text>
           </div>
+
+          <Alert icon={<IconCheck />} color="green">
+            <Stack gap="xs">
+              <Text fw={600}>Status</Text>
+              <div>
+                <Text size="sm">✓ {importResult.imported} transaktioner importeret</Text>
+                {importResult.duplicates > 0 && <Text size="sm">⊘ {importResult.duplicates} dubletter (allerede importeret)</Text>}
+                {importResult.errors > 0 && <Text size="sm">✕ {importResult.errors} transaktioner med fejl</Text>}
+              </div>
+            </Stack>
+          </Alert>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
             <div style={{ textAlign: 'center' }}>
@@ -234,8 +329,12 @@ export default function CSVImportModal() {
             </div>
           </div>
 
+          <Text size="xs" c="dimmed">
+            Dine transaktioner vil nu vises på transaktionslisten og være kategoriseret automatisk. Du kan redigere kategorier og segmenter direkte i transaktionslisten.
+          </Text>
+
           <Button onClick={handleReset} fullWidth>
-            Importer mere
+            Importér mere
           </Button>
         </Stack>
       </Card>
