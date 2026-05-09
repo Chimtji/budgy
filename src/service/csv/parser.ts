@@ -17,13 +17,26 @@ export interface CSVFormat {
   currencyColumn?: string;
   typeColumn?: string;
   transform?: (row: Record<string, string>) => ParsedTransaction;
+  // NEW: Store the indices where patterns were found
+  matchedIndices?: Record<string, number>;
 }
 
 // Bank-specific formats
+// Normalize Danish characters to ASCII equivalents to avoid encoding issues
+function normalizeDanishChars(str: string): string {
+  // Replace both the normal characters AND the corrupted/replacement character variants
+  // Input is already lowercase, so only need lowercase replacements
+  return str
+    .replace(/ø/g, 'oe')            // Normal ø
+    .replace(/å/g, 'aa')            // Normal å
+    .replace(/æ/g, 'ae')            // Normal æ
+    .replace(/[\uFFFD]/g, 'oe');    // Unicode replacement character (corrupted UTF-8 - usually ø)
+}
+
 export const BANK_FORMATS: Record<string, CSVFormat> = {
   danske_export: {
     name: 'Danske Bank (Detailed Export)',
-    detectPatterns: ['Eksportkonto', 'Dato', 'Tekst', 'Beløb'],
+    detectPatterns: ['exportkonto', 'dato', 'tekst', 'beloeb'], // Normalized: beløb → beloeb
     dateColumn: 'Dato',
     amountColumn: 'Beløb',
     descriptionColumn: 'Tekst',
@@ -32,7 +45,7 @@ export const BANK_FORMATS: Record<string, CSVFormat> = {
   },
   danske: {
     name: 'Danske Bank',
-    detectPatterns: ['Dato', 'Beløb', 'Beskrivelse', 'Modtager'],
+    detectPatterns: ['dato', 'beloeb', 'beskrivelse', 'modtager'], // All normalized to ASCII
     dateColumn: 'Dato',
     amountColumn: 'Beløb',
     descriptionColumn: 'Beskrivelse',
@@ -42,7 +55,7 @@ export const BANK_FORMATS: Record<string, CSVFormat> = {
   },
   nordea: {
     name: 'Nordea',
-    detectPatterns: ['Transaktionsdato', 'Beløb', 'Tekst', 'Modpart'],
+    detectPatterns: ['transaktionsdato', 'beloeb', 'tekst', 'modpart'],
     dateColumn: 'Transaktionsdato',
     amountColumn: 'Beløb',
     descriptionColumn: 'Tekst',
@@ -78,18 +91,40 @@ export const BANK_FORMATS: Record<string, CSVFormat> = {
 };
 
 export function detectBankFormat(headers: string[]): CSVFormat {
-  const lowerHeaders = headers.map((h) => h.toLowerCase().trim());
+  const lowerHeaders = headers.map((h) =>
+    normalizeDanishChars(h.toLowerCase().trim())
+  );
 
   // Try to match each bank format
   for (const [key, format] of Object.entries(BANK_FORMATS)) {
     if (key === 'generic') continue;
 
     const matches = format.detectPatterns.map((pattern) =>
-      lowerHeaders.some((h) => h.includes(pattern.toLowerCase()))
+      lowerHeaders.some((h) => h.includes(normalizeDanishChars(pattern.toLowerCase())))
     );
 
     if (matches.filter(Boolean).length >= format.detectPatterns.length * 0.7) {
-      return format;
+      // Build index map: for each pattern, find its index in the normalized header
+      const matchedIndices: Record<string, number> = {};
+      format.detectPatterns.forEach((pattern) => {
+        const normalizedPattern = normalizeDanishChars(pattern.toLowerCase());
+        const idx = lowerHeaders.findIndex(h => h.includes(normalizedPattern));
+        if (idx >= 0) {
+          matchedIndices[pattern] = idx;
+        }
+      });
+
+      // Return format with matched indices
+      return {
+        ...format,
+        matchedIndices,
+        dateColumn: format.dateColumn.toLowerCase().trim(),
+        amountColumn: format.amountColumn.toLowerCase().trim(),
+        descriptionColumn: format.descriptionColumn.toLowerCase().trim(),
+        merchantColumn: format.merchantColumn.toLowerCase().trim(),
+        currencyColumn: format.currencyColumn ? format.currencyColumn.toLowerCase().trim() : undefined,
+        typeColumn: format.typeColumn ? format.typeColumn.toLowerCase().trim() : undefined,
+      };
     }
   }
 
@@ -98,23 +133,38 @@ export function detectBankFormat(headers: string[]): CSVFormat {
 }
 
 function detectGenericFormat(headers: string[]): CSVFormat {
-  const lowerHeaders = headers.map((h) => h.toLowerCase());
+  const lowerHeaders = headers.map((h) => normalizeDanishChars(h.toLowerCase()));
 
   const findColumn = (keywords: string[]): string => {
-    const match = headers.find((h) =>
-      keywords.some((k) => h.toLowerCase().includes(k.toLowerCase()))
+    const match = lowerHeaders.find((h) =>
+      keywords.some((k) => h.includes(normalizeDanishChars(k.toLowerCase())))
     );
     return match || '';
   };
+
+  const findColumnIndex = (keywords: string[]): number => {
+    return lowerHeaders.findIndex((h) =>
+      keywords.some((k) => h.includes(normalizeDanishChars(k.toLowerCase())))
+    );
+  };
+
+  // Build matched indices for generic format too
+  const matchedIndices: Record<string, number> = {};
+  matchedIndices['date'] = findColumnIndex(['date', 'dato', 'transaction', 'transaktions']);
+  matchedIndices['amount'] = findColumnIndex(['amount', 'beloeb', 'sum']);
+  matchedIndices['description'] = findColumnIndex(['description', 'beskrivelse', 'tekst', 'text']);
+  matchedIndices['merchant'] = findColumnIndex(['merchant', 'modtager', 'recipient', 'sender', 'modpart']);
+  matchedIndices['currency'] = findColumnIndex(['currency', 'valuta']);
 
   return {
     name: 'Generic (Auto-detected)',
     detectPatterns: [],
     dateColumn: findColumn(['date', 'dato', 'transaction', 'transaktions']),
-    amountColumn: findColumn(['amount', 'beløb', 'sum']),
+    amountColumn: findColumn(['amount', 'beloeb', 'sum']),
     descriptionColumn: findColumn(['description', 'beskrivelse', 'tekst', 'text']),
     merchantColumn: findColumn(['merchant', 'modtager', 'recipient', 'sender', 'modpart']),
     currencyColumn: findColumn(['currency', 'valuta']),
+    matchedIndices,
   };
 }
 

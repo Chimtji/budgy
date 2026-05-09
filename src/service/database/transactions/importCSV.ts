@@ -10,7 +10,11 @@ import { TServerResponse } from '@/service/types';
 export const importTransactionsFromCSV = async (
   transactions: ParsedTransaction[]
 ): Promise<TServerResponse<{ imported: number; duplicates: number; errors: number }>> => {
+  console.log('[ImportCSV] Function called with', transactions.length, 'transactions');
+
   const auth = await isAuthenticated();
+  console.log('[ImportCSV] Auth result:', auth.success, auth.success ? auth.data?.user?.id : auth.error);
+
   if (!auth.success) return auth;
 
   const userId = auth.data.user.id;
@@ -28,7 +32,10 @@ export const importTransactionsFromCSV = async (
   let errors = 0;
 
   try {
-    for (const tx of transactions) {
+    console.log(`[ImportCSV] Starting import of ${transactions.length} transactions`);
+
+    for (let i = 0; i < transactions.length; i++) {
+      const tx = transactions[i];
       try {
         // Create a unique identifier for the transaction
         const externalId = crypto
@@ -51,8 +58,10 @@ export const importTransactionsFromCSV = async (
         const categoryText = tx.description || tx.merchantName || 'Ukendt transaktion';
         const categorization = await categorizeTransaction(userId, categoryText);
 
+        console.log(`[ImportCSV] Tx ${i + 1}/${transactions.length}: merchant="${tx.merchantName}", category=${categorization.categoryId}, segment=${categorization.segmentId}`);
+
         // Insert transaction
-        await sqlClient`
+        const result = await sqlClient`
           INSERT INTO transactions (
             id, user_id, external_id, merchant_name, description,
             amount, currency, transaction_date, transaction_type,
@@ -77,13 +86,17 @@ export const importTransactionsFromCSV = async (
 
         imported++;
       } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : String(error);
         console.error(
-          'Failed to import transaction:',
-          error instanceof Error ? error.message : String(error)
+          `[ImportCSV] Tx ${i + 1} failed - merchant="${tx.merchantName}", date="${tx.transactionDate}", amount=${tx.amount}:`,
+          errorMsg,
+          error instanceof Error ? error.stack : ''
         );
         errors++;
       }
     }
+
+    console.log(`[ImportCSV] Import complete: imported=${imported}, duplicates=${duplicates}, errors=${errors}`);
 
     return {
       status: 200,
