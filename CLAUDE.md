@@ -53,6 +53,18 @@ Apply expertise from all these domains in all decisions, code reviews, and imple
 - Keep global CSS minimal; name CSS modules `<Component>.module.css` and import them as `classes` or `styles`.
 - Follow existing dashboard patterns for cards, tables, selectors, and modals to keep UX consistent. Use the same interaction patterns (e.g., drawer-based detail views, modal triggers) across similar features.
 
+## Design System
+
+The app follows a flat, minimal design language. All new UI must conform to these rules:
+
+- **Surfaces**: White background, `1px solid var(--mantine-color-gray-2)` border, **no shadow**. This is enforced via the Mantine theme default (`shadow: 'none'`, `withBorder: true`). Never override with `shadow="xs"` or similar.
+- **Page background**: `#f4f5f7` (set in `layout.module.css`). Content sits on top of this.
+- **List/table rows**: `background: var(--mantine-color-default-hover)`, `borderRadius: 6px` on the row. First and last cell get `borderRadius: '6px 0 0 6px'` / `'0 6px 6px 0'` respectively. Row gap via `borderSpacing: '0 4px'` on the table.
+- **Badges**: Always `variant="light"`. Category badges use `color={category.color}`. Segment badges use `color="gray"`. Both use `radius="sm" size="sm"`.
+- **Accent color**: Violet (`primaryColor: 'violet'` in theme). Active nav links and primary actions use violet.
+- **Typography**: Subtitles and secondary info use `c="dimmed"`. Primary labels use `fw={500}` or `fw={700}`. No decorative text styling beyond this.
+- **Icons**: Tabler icons, `stroke={1.5}`, sized contextually (16–20px for UI, 14px for inline/action icons).
+
 ## Types, Naming & Imports
 
 - Prefix domain types with `T`, colocate them with their feature, and re-export via index files where helpful.

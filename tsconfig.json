@@ -20,6 +20,8 @@
       "@/service/database/*": ["./src/service/database/*"],
       "@/service/csv/*": ["./src/service/csv/*"],
       "@/service/categorization/*": ["./src/service/categorization/*"],
+      "@/service/subscriptions/*": ["./src/service/subscriptions/*"],
+      "@/service/notifications/*": ["./src/service/notifications/*"],
       "@/service/types": ["./src/service/types.ts"],
       "@/app/*": ["./src/app/*"],
       "@/service": ["./src/service/index.ts"],

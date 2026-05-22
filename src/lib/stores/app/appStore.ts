@@ -1,46 +1,28 @@
-'use client';
-
-import { produce } from 'immer';
 import { create } from 'zustand';
-import { persist, PersistOptions, subscribeWithSelector } from 'zustand/middleware';
-import { useBillsStore } from '../bills/billsStore';
-import { TAppStore } from './appStore.types';
+import { persist, subscribeWithSelector } from 'zustand/middleware';
+import { immer } from 'zustand/middleware/immer';
 
-const STORE_NAME = 'app-store';
+type TState = {
+  year: number;
+};
 
-export const useAppStore = create<TAppStore>()(
-  subscribeWithSelector(
-    persist<TAppStore>(
-      (set) => ({
+type TActions = {
+  setYear: (year: number) => void;
+};
+
+export const useAppStore = create<TState & TActions>()(
+  persist(
+    subscribeWithSelector(
+      immer((set) => ({
         year: new Date().getFullYear(),
-        userId: null,
-        setYear: (year: number) => {
-          set(
-            produce((state) => {
-              state.year = year;
-            })
-          );
-        },
-        setUserId: (userId: string | null) => {
-          set(
-            produce((state) => {
-              state.userId = userId;
-            })
-          );
-        },
-        cleanData: async () => {
-          await useBillsStore.getState().clean();
-          return Promise.resolve();
-        },
-      }),
-      { name: STORE_NAME } satisfies PersistOptions<TAppStore>
-    )
-  )
-);
 
-useAppStore.subscribe(
-  (state) => state.year,
-  (year) => {
-    useBillsStore.getState().getAllOfYear(year);
-  }
+        setYear: (year) => {
+          set((state) => {
+            state.year = year;
+          });
+        },
+      }))
+    ),
+    { name: 'app-store' }
+  )
 );

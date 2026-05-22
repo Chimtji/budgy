@@ -1,247 +1,171 @@
-export interface ParsedTransaction {
-  transactionDate: string;
-  merchantName: string;
+type TParsedRow = {
+  date: string;
   amount: number;
-  description?: string;
-  currency: string;
-  type: 'debit' | 'credit';
-}
-
-export interface CSVFormat {
-  name: string;
-  detectPatterns: string[]; // Look for these column names to detect format
-  dateColumn: string;
-  amountColumn: string;
-  descriptionColumn: string;
-  merchantColumn: string;
-  currencyColumn?: string;
-  typeColumn?: string;
-  transform?: (row: Record<string, string>) => ParsedTransaction;
-  // NEW: Store the indices where patterns were found
-  matchedIndices?: Record<string, number>;
-}
-
-// Bank-specific formats
-// Normalize Danish characters to ASCII equivalents to avoid encoding issues
-function normalizeDanishChars(str: string): string {
-  // Replace both the normal characters AND the corrupted/replacement character variants
-  // Input is already lowercase, so only need lowercase replacements
-  return str
-    .replace(/ø/g, 'oe')            // Normal ø
-    .replace(/å/g, 'aa')            // Normal å
-    .replace(/æ/g, 'ae')            // Normal æ
-    .replace(/[\uFFFD]/g, 'oe');    // Unicode replacement character (corrupted UTF-8 - usually ø)
-}
-
-export const BANK_FORMATS: Record<string, CSVFormat> = {
-  danske_export: {
-    name: 'Danske Bank (Detailed Export)',
-    detectPatterns: ['exportkonto', 'dato', 'tekst', 'beloeb'], // Normalized: beløb → beloeb
-    dateColumn: 'Dato',
-    amountColumn: 'Beløb',
-    descriptionColumn: 'Tekst',
-    merchantColumn: 'Tekst', // Use Tekst as merchant source, extract first part
-    currencyColumn: 'Valuta',
-  },
-  danske: {
-    name: 'Danske Bank',
-    detectPatterns: ['dato', 'beloeb', 'beskrivelse', 'modtager'], // All normalized to ASCII
-    dateColumn: 'Dato',
-    amountColumn: 'Beløb',
-    descriptionColumn: 'Beskrivelse',
-    merchantColumn: 'Modtager',
-    currencyColumn: 'Valuta',
-    typeColumn: 'Type',
-  },
-  nordea: {
-    name: 'Nordea',
-    detectPatterns: ['transaktionsdato', 'beloeb', 'tekst', 'modpart'],
-    dateColumn: 'Transaktionsdato',
-    amountColumn: 'Beløb',
-    descriptionColumn: 'Tekst',
-    merchantColumn: 'Modpart',
-    currencyColumn: 'Valuta',
-  },
-  revolut: {
-    name: 'Revolut',
-    detectPatterns: ['Completed Date', 'Amount', 'Description', 'Merchant'],
-    dateColumn: 'Completed Date',
-    amountColumn: 'Amount',
-    descriptionColumn: 'Description',
-    merchantColumn: 'Merchant',
-    currencyColumn: 'Currency',
-  },
-  wise: {
-    name: 'Wise',
-    detectPatterns: ['Date', 'Amount', 'Description', 'Recipient'],
-    dateColumn: 'Date',
-    amountColumn: 'Amount',
-    descriptionColumn: 'Description',
-    merchantColumn: 'Recipient',
-    currencyColumn: 'Currency',
-  },
-  generic: {
-    name: 'Generic (Auto-detect)',
-    detectPatterns: [],
-    dateColumn: '',
-    amountColumn: '',
-    descriptionColumn: '',
-    merchantColumn: '',
-  },
+  description: string;
+  recipient: string;
+  balance: number | null;
+  supp_text: string | null;
 };
 
-export function detectBankFormat(headers: string[]): CSVFormat {
-  const lowerHeaders = headers.map((h) =>
-    normalizeDanishChars(h.toLowerCase().trim())
-  );
+function parseDanishNumber(value: string): number {
+  return parseFloat(value.replace(/\./g, '').replace(',', '.'));
+}
 
-  // Try to match each bank format
-  for (const [key, format] of Object.entries(BANK_FORMATS)) {
-    if (key === 'generic') continue;
+function detectDelimiter(line: string): string {
+  if (line.includes('\t')) return '\t';
+  if (line.includes(';')) return ';';
+  return ',';
+}
 
-    const matches = format.detectPatterns.map((pattern) =>
-      lowerHeaders.some((h) => h.includes(normalizeDanishChars(pattern.toLowerCase())))
-    );
+function isDateLike(value: string): boolean {
+  return /\d{2}[.\-/]\d{2}[.\-/]\d{2,4}/.test(value) || /\d{4}-\d{2}-\d{2}/.test(value);
+}
 
-    if (matches.filter(Boolean).length >= format.detectPatterns.length * 0.7) {
-      // Build index map: for each pattern, find its index in the normalized header
-      const matchedIndices: Record<string, number> = {};
-      format.detectPatterns.forEach((pattern) => {
-        const normalizedPattern = normalizeDanishChars(pattern.toLowerCase());
-        const idx = lowerHeaders.findIndex(h => h.includes(normalizedPattern));
-        if (idx >= 0) {
-          matchedIndices[pattern] = idx;
-        }
-      });
+function isAmountLike(value: string): boolean {
+  const v = value.trim();
+  return /^-?[\d.,]+$/.test(v) && (v.includes(',') || v.includes('.')) && parseDanishNumber(v) !== 0;
+}
 
-      // Return format with matched indices
-      return {
-        ...format,
-        matchedIndices,
-        dateColumn: format.dateColumn.toLowerCase().trim(),
-        amountColumn: format.amountColumn.toLowerCase().trim(),
-        descriptionColumn: format.descriptionColumn.toLowerCase().trim(),
-        merchantColumn: format.merchantColumn.toLowerCase().trim(),
-        currencyColumn: format.currencyColumn ? format.currencyColumn.toLowerCase().trim() : undefined,
-        typeColumn: format.typeColumn ? format.typeColumn.toLowerCase().trim() : undefined,
-      };
+function normalizeDate(value: string): string {
+  const ddmmyyyy = value.match(/^(\d{2})[.\-/](\d{2})[.\-/](\d{4})$/);
+  if (ddmmyyyy) return `${ddmmyyyy[3]}-${ddmmyyyy[2]}-${ddmmyyyy[1]}`;
+
+  const ddmmyy = value.match(/^(\d{2})[.\-/](\d{2})[.\-/](\d{2})$/);
+  if (ddmmyy) return `20${ddmmyy[3]}-${ddmmyy[2]}-${ddmmyy[1]}`;
+
+  return value;
+}
+
+// Find first line (up to 10) that looks like a named-column header row
+function stripQuotes(value: string): string {
+  const t = value.trim();
+  return t.startsWith('"') && t.endsWith('"') ? t.slice(1, -1) : t;
+}
+
+function findHeaderRow(lines: string[], delimiter: string): number {
+  for (let i = 0; i < Math.min(10, lines.length); i++) {
+    const cols = lines[i].split(delimiter).map((h) => stripQuotes(h).toLowerCase());
+    if (cols.some((h) => h === 'dato') && cols.some((h) => h === 'tekst')) {
+      return i;
     }
   }
-
-  // Fallback: auto-detect columns by name similarity
-  return detectGenericFormat(headers);
+  return -1;
 }
 
-function detectGenericFormat(headers: string[]): CSVFormat {
-  const lowerHeaders = headers.map((h) => normalizeDanishChars(h.toLowerCase()));
+// Parse a CSV that has named column headers (Danish bank exports)
+function parseWithHeaders(lines: string[], delimiter: string, headerIdx: number): TParsedRow[] {
+  const headers = lines[headerIdx].split(delimiter).map((h) => stripQuotes(h).toLowerCase());
 
-  const findColumn = (keywords: string[]): string => {
-    const match = lowerHeaders.find((h) =>
-      keywords.some((k) => h.includes(normalizeDanishChars(k.toLowerCase())))
-    );
-    return match || '';
-  };
+  const col = (name: string) => headers.indexOf(name);
 
-  const findColumnIndex = (keywords: string[]): number => {
-    return lowerHeaders.findIndex((h) =>
-      keywords.some((k) => h.includes(normalizeDanishChars(k.toLowerCase())))
-    );
-  };
+  const colDato = col('dato');
+  const colTekst = col('tekst');
+  // 'beløb' may not match due to encoding; fall back to column after 'tekst'
+  const colBelob = (() => {
+    const exact = headers.findIndex((h) => h === 'beløb' || h === 'belob');
+    return exact !== -1 ? exact : colTekst + 1;
+  })();
+  const colSaldo = col('saldo');
+  const colIndbetaler = col('indbetaler');
+  const colModtagernavn = col('modtagernavn');
+  const colModtager = headers.findIndex((h) => h === 'modtager'); // exact — excludes 'modtagerkonto'
+  const colSuppTekst = headers.findIndex((h) => h === 'supp. tekst til modtager');
 
-  // Build matched indices for generic format too
-  const matchedIndices: Record<string, number> = {};
-  matchedIndices['date'] = findColumnIndex(['date', 'dato', 'transaction', 'transaktions']);
-  matchedIndices['amount'] = findColumnIndex(['amount', 'beloeb', 'sum']);
-  matchedIndices['description'] = findColumnIndex(['description', 'beskrivelse', 'tekst', 'text']);
-  matchedIndices['merchant'] = findColumnIndex(['merchant', 'modtager', 'recipient', 'sender', 'modpart']);
-  matchedIndices['currency'] = findColumnIndex(['currency', 'valuta']);
+  const rows: TParsedRow[] = [];
 
-  return {
-    name: 'Generic (Auto-detected)',
-    detectPatterns: [],
-    dateColumn: findColumn(['date', 'dato', 'transaction', 'transaktions']),
-    amountColumn: findColumn(['amount', 'beloeb', 'sum']),
-    descriptionColumn: findColumn(['description', 'beskrivelse', 'tekst', 'text']),
-    merchantColumn: findColumn(['merchant', 'modtager', 'recipient', 'sender', 'modpart']),
-    currencyColumn: findColumn(['currency', 'valuta']),
-    matchedIndices,
-  };
-}
+  for (let i = headerIdx + 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
 
-export function parseCSVLine(line: string): Record<string, string> {
-  // Handle quoted fields with commas inside
-  const result: Record<string, string> = {};
-  const fields: string[] = [];
-  let current = '';
-  let inQuotes = false;
+    const cols = line.split(delimiter).map((c) => stripQuotes(c));
 
-  for (let i = 0; i < line.length; i++) {
-    const char = line[i];
-    if (char === '"') {
-      inQuotes = !inQuotes;
-    } else if (char === ',' && !inQuotes) {
-      fields.push(current.trim());
-      current = '';
+    const dateRaw = cols[colDato] ?? '';
+    if (!isDateLike(dateRaw)) continue;
+
+    const amountRaw = cols[colBelob] ?? '';
+    const amount = parseDanishNumber(amountRaw);
+    if (isNaN(amount)) continue;
+
+    const tekst = cols[colTekst] ?? '';
+    const suppRaw = colSuppTekst !== -1 ? (cols[colSuppTekst] ?? '') : '';
+    const balanceRaw = colSaldo !== -1 ? (cols[colSaldo] ?? '') : '';
+    const indbetaler = colIndbetaler !== -1 ? (cols[colIndbetaler] ?? '') : '';
+    const modtagernavn = colModtagernavn !== -1 ? (cols[colModtagernavn] ?? '') : '';
+    const modtager = colModtager !== -1 ? (cols[colModtager] ?? '') : '';
+
+    // Build full description from tekst + supplementary text
+    let description: string;
+    if (suppRaw && suppRaw.toLowerCase().startsWith(tekst.toLowerCase())) {
+      description = suppRaw;
+    } else if (suppRaw) {
+      description = tekst ? `${tekst} – ${suppRaw}` : suppRaw;
     } else {
-      current += char;
+      description = tekst;
     }
+
+    const recipient = modtager || modtagernavn || indbetaler || tekst;
+    const balance = balanceRaw ? (parseDanishNumber(balanceRaw) || null) : null;
+    const supp_text = suppRaw || null;
+
+    rows.push({ date: normalizeDate(dateRaw), amount, description, recipient, balance, supp_text });
   }
-  fields.push(current.trim());
-  return result;
+
+  return rows;
 }
 
-export function parseTransactionAmount(
-  amountStr: string,
-  type?: string
-): { amount: number; type: 'debit' | 'credit' } {
-  // Remove currency symbols and spaces
-  let cleanAmount = amountStr
-    .replace(/[^\d\-,.]/g, '')
-    .replace(/\./g, '')
-    .replace(',', '.');
-  const amount = Math.abs(parseFloat(cleanAmount));
+// Fallback: detect columns by scanning data rows for date/amount patterns
+function parseGeneric(lines: string[], delimiter: string): TParsedRow[] {
+  if (lines.length < 2) return [];
 
-  // Determine type
-  let txType: 'debit' | 'credit' = 'debit';
-  if (type && type.toLowerCase().includes('credit')) {
-    txType = 'credit';
-  } else if (type && type.toLowerCase().includes('debit')) {
-    txType = 'debit';
-  } else if (parseFloat(cleanAmount) > 0) {
-    txType = amountStr.includes('-') ? 'debit' : 'credit';
+  const rows: TParsedRow[] = [];
+  let dateIdx = -1;
+  let amountIdx = -1;
+  let descIdx = -1;
+
+  for (let i = 0; i < lines.length; i++) {
+    const cols = lines[i].split(delimiter).map((c) => c.trim());
+    if (cols.length < 2) continue;
+    for (let j = 0; j < cols.length; j++) {
+      if (dateIdx === -1 && isDateLike(cols[j])) dateIdx = j;
+      if (amountIdx === -1 && isAmountLike(cols[j])) amountIdx = j;
+    }
+    if (dateIdx !== -1 && amountIdx !== -1) break;
   }
 
-  return { amount, type: txType };
+  const headers = lines[0].split(delimiter).map((h) => stripQuotes(h).toLowerCase());
+  for (let j = 0; j < headers.length; j++) {
+    if (j !== dateIdx && j !== amountIdx) { descIdx = j; break; }
+  }
+
+  const startRow = isDateLike(lines[0].split(delimiter)[dateIdx] ?? '') ? 0 : 1;
+
+  for (let i = startRow; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+    const cols = line.split(delimiter).map((c) => stripQuotes(c));
+    if (dateIdx === -1 || amountIdx === -1 || cols.length <= Math.max(dateIdx, amountIdx)) continue;
+
+    const rawDate = cols[dateIdx];
+    if (!isDateLike(rawDate)) continue;
+
+    const amount = parseDanishNumber(cols[amountIdx]);
+    if (isNaN(amount)) continue;
+
+    const description = descIdx !== -1 ? cols[descIdx] : '';
+    rows.push({ date: normalizeDate(rawDate), amount, description, recipient: description, balance: null, supp_text: null });
+  }
+
+  return rows;
 }
 
-export function parseTransactionDate(dateStr: string): string {
-  // Try common date formats
-  const formats = [
-    /^(\d{4})-(\d{2})-(\d{2})/, // YYYY-MM-DD
-    /^(\d{2})\/(\d{2})\/(\d{4})/, // DD/MM/YYYY
-    /^(\d{2})\.(\d{2})\.(\d{4})/, // DD.MM.YYYY
-    /^(\d{2})-(\d{2})-(\d{4})/, // DD-MM-YYYY
-  ];
+export function parseCSV(content: string): TParsedRow[] {
+  const lines = content.split(/\r?\n/).filter((l) => l.trim().length > 0);
+  if (lines.length < 2) return [];
 
-  for (const format of formats) {
-    const match = dateStr.match(format);
-    if (match) {
-      // Convert to YYYY-MM-DD
-      if (match[1].length === 4) {
-        // Already YYYY-MM-DD
-        return `${match[1]}-${match[2]}-${match[3]}`;
-      } else {
-        // DD/MM/YYYY format
-        return `${match[3]}-${match[2]}-${match[1]}`;
-      }
-    }
-  }
+  const delimiter = detectDelimiter(lines[0]);
+  const headerIdx = findHeaderRow(lines, delimiter);
 
-  // Fallback: try to parse as ISO date
-  const date = new Date(dateStr);
-  if (!isNaN(date.getTime())) {
-    return date.toISOString().split('T')[0];
-  }
+  if (headerIdx !== -1) return parseWithHeaders(lines, delimiter, headerIdx);
 
-  return new Date().toISOString().split('T')[0];
+  return parseGeneric(lines, delimiter);
 }

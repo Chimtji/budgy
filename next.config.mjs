@@ -9,6 +9,7 @@ export default withBundleAnalyzer({
   eslint: {
     ignoreDuringBuilds: true,
   },
+  serverExternalPackages: ['better-sqlite3'],
   experimental: {
     optimizePackageImports: ['@mantine/core', '@mantine/hooks'],
   },

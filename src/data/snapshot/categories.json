@@ -1,0 +1,82 @@
+[
+  {
+    "id": "974a06b6-f764-4d1e-a6a6-04c130e51de0",
+    "key": "celebrations",
+    "label": "Højtider & Fejringer",
+    "color": "grape",
+    "icon": "IconConfetti",
+    "description": "Fejring af særlige begivenheder og højtider"
+  },
+  {
+    "id": "c1c51774-5a07-495d-b060-8005bddf5993",
+    "key": "costOfLiving",
+    "label": "Leveomkostninger",
+    "color": "green",
+    "icon": "IconReceipt",
+    "description": "Abonnementer, forsikringer og andre faste betalinger"
+  },
+  {
+    "id": "7f038f3d-5513-4937-9d35-564ca5f0352c",
+    "key": "charity",
+    "label": "Velgørenhed",
+    "color": "pink",
+    "icon": "IconGift",
+    "description": "Donationer og velgørenhedsbidrag"
+  },
+  {
+    "id": "9baca987-c53b-47be-8d89-36ac615f06d8",
+    "key": "home",
+    "label": "bolig",
+    "color": "teal",
+    "icon": "IconHome",
+    "description": "Husleje, boligudgifter og vedligeholdelse"
+  },
+  {
+    "id": "d9c2d6c8-aefb-4550-b8ad-d34af11f103b",
+    "key": "groceries",
+    "label": "husholdning",
+    "color": "violet",
+    "icon": "IconShoppingBag",
+    "description": "Daglige udgifter til hjemmet"
+  },
+  {
+    "id": "601af891-5460-46e8-a1ab-fc401f2b074d",
+    "key": "income",
+    "label": "indkomst",
+    "color": "cyan",
+    "icon": "IconCoins",
+    "description": "Løn, overførsler og anden indtjening"
+  },
+  {
+    "id": "f32a7140-ee06-4e68-a603-3e31c2024e69",
+    "key": "experiencesAndLeisure",
+    "label": "oplevelser & fritid",
+    "color": "blue",
+    "icon": "IconConfetti",
+    "description": "Underholdning, hobbyer og sociale aktiviteter"
+  },
+  {
+    "id": "010733b5-e8bc-4f9e-8094-2d24dd124bc2",
+    "key": "savingsAndInvestments",
+    "label": "opsparing & investeringer",
+    "color": "red",
+    "icon": "IconPigMoney",
+    "description": "Overførsler til opbygning af formue"
+  },
+  {
+    "id": "3551eed2-b4c4-4068-b656-35a607d87042",
+    "key": "transport",
+    "label": "transport",
+    "color": "indigo",
+    "icon": "IconCar",
+    "description": "udgifter til transportmidler og kørsel"
+  },
+  {
+    "id": "d50203d4-834e-4a45-9cf0-d4eea9e950ca",
+    "key": "uncategorized",
+    "label": "ukategoriseret",
+    "color": "orange",
+    "icon": "IconQuestionMark",
+    "description": "Udgifter uden tildelt kategori"
+  }
+]

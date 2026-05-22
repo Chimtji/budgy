@@ -7,7 +7,7 @@ import { theme } from '../../../theme';
 const Mantine = ({ children }: { children: React.ReactNode }) => {
   return (
     <>
-      <MantineProvider defaultColorScheme="dark" theme={theme}>
+      <MantineProvider forceColorScheme="light" theme={theme}>
         <Notifications />
         <Box>{children}</Box>
       </MantineProvider>

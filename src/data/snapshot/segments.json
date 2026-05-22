@@ -1,0 +1,422 @@
+[
+  {
+    "id": "3759c7e7-7fae-4412-a617-b4f7f3427b43",
+    "key": "stocks",
+    "category_key": "savingsAndInvestments",
+    "label": "Aktier & Obligationer",
+    "description": "Investeringer i værdipapirer"
+  },
+  {
+    "id": "81125c02-abc5-4362-b091-6d9a70d6ecdb",
+    "key": "other",
+    "category_key": "groceries",
+    "label": "Andet",
+    "description": "Husholdningsudgifter der ikke passer i øvrige segmenter"
+  },
+  {
+    "id": "577592df-4302-4617-b3e2-4b618fc3e329",
+    "key": "other",
+    "category_key": "transport",
+    "label": "Andet",
+    "description": "Transportudgifter der ikke passer i øvrige segmenter"
+  },
+  {
+    "id": "47bc341d-8db6-45d8-8232-2f8dacad31cd",
+    "key": "other",
+    "category_key": "experiencesAndLeisure",
+    "label": "Andet",
+    "description": "Fritidsudgifter der ikke passer i øvrige segmenter"
+  },
+  {
+    "id": "11d4fe3b-d868-4ab8-a78c-3406c2757a3b",
+    "key": "other",
+    "category_key": "celebrations",
+    "label": "Andet",
+    "description": "Fejringsudgifter der ikke passer i øvrige segmenter"
+  },
+  {
+    "id": "48dc64b3-758d-43d3-a25d-1ba0193d6e85",
+    "key": "other",
+    "category_key": "costOfLiving",
+    "label": "Andet",
+    "description": "udgifter der ikke passer i øvrige segmenter"
+  },
+  {
+    "id": "482446a5-8b2b-4461-ae17-13fb2d06746c",
+    "key": "other",
+    "category_key": "home",
+    "label": "Andet",
+    "description": "Boligudgifter der ikke passer i øvrige segmenter"
+  },
+  {
+    "id": "e364b956-7bcd-4a5e-abb0-785e3256f07e",
+    "key": "other",
+    "category_key": "income",
+    "label": "Andet",
+    "description": "Øvrige former for indkomst"
+  },
+  {
+    "id": "9acfcf57-6b93-4ca5-b618-10e800934a62",
+    "key": "other",
+    "category_key": "charity",
+    "label": "Andet",
+    "description": "Øvrige velgørenhedsbidrag"
+  },
+  {
+    "id": "1bf29287-c68c-4843-87a5-46ebdb0f3d66",
+    "key": "other",
+    "category_key": "savingsAndInvestments",
+    "label": "Andet",
+    "description": "Øvrige former for opsparing og investering"
+  },
+  {
+    "id": "5f1c16ee-c4ba-47a4-a579-bd074e76f09e",
+    "key": "pharmacy",
+    "category_key": "costOfLiving",
+    "label": "Apoteker & Medicin",
+    "description": "Køb af medicin og apoteksvarer"
+  },
+  {
+    "id": "6bbd8cef-1238-42bc-9d29-72df60008e9c",
+    "key": "dining",
+    "category_key": "experiencesAndLeisure",
+    "label": "Bar, Café & Restaurant",
+    "description": "Udgifter til spisesteder og drikkevarer ude"
+  },
+  {
+    "id": "0c08f454-3544-43a8-982b-16f0c9c4502e",
+    "key": "contribution",
+    "category_key": "charity",
+    "label": "Bidrag",
+    "description": "Donationer til organisationer og initiativer"
+  },
+  {
+    "id": "437c8ed0-d1a6-407d-b41f-4b7388e0a534",
+    "key": "loan",
+    "category_key": "transport",
+    "label": "Billån",
+    "description": "Afdrag og renter på billån"
+  },
+  {
+    "id": "c009d7ba-11f9-4d2c-b537-57a7257ca768",
+    "key": "loan",
+    "category_key": "home",
+    "label": "Boliglån",
+    "description": "Afdrag og renter på boliglån"
+  },
+  {
+    "id": "79e51c59-2585-4e80-83c3-9302ba2c6c3e",
+    "key": "eyewear",
+    "category_key": "costOfLiving",
+    "label": "Briller & Kontaktlinser",
+    "description": "Synsrelaterede udgifter som briller, linser og tilbehør"
+  },
+  {
+    "id": "a755b0b7-72bf-4504-9aa8-ba678c82a2f6",
+    "key": "fuel",
+    "category_key": "transport",
+    "label": "Brændstof",
+    "description": "Udgifter til benzin, diesel eller opladning"
+  },
+  {
+    "id": "3984ab23-f90e-42e5-b23e-e6d656e9583b",
+    "key": "fines",
+    "category_key": "transport",
+    "label": "Bøder & Afgifter",
+    "description": "Parkeringsbøder og andre transportrelaterede afgifter"
+  },
+  {
+    "id": "a48b793a-3050-4dfe-aed7-cbfd8ccc5436",
+    "key": "child",
+    "category_key": "savingsAndInvestments",
+    "label": "Børneopsparing",
+    "description": "Opsparing til børns fremtid"
+  },
+  {
+    "id": "d9577d6b-43a2-43a5-b460-2a462c4c5519",
+    "key": "childBenefit",
+    "category_key": "income",
+    "label": "Børnepenge",
+    "description": "Offentlige udbetalinger til børn"
+  },
+  {
+    "id": "58890c5f-1caf-4c06-98fd-515d0fb9b804",
+    "key": "groceries",
+    "category_key": "groceries",
+    "label": "Dagligvarer",
+    "description": "Indkøb af mad og daglige fornødenheder"
+  },
+  {
+    "id": "66769659-3243-4e01-9696-b0f78d476e84",
+    "key": "hoa",
+    "category_key": "home",
+    "label": "Ejerforening",
+    "description": "Betaling til ejer- eller andelsforening"
+  },
+  {
+    "id": "c090fd3e-b1d8-44c5-b7f0-0b7696f66555",
+    "key": "unions",
+    "category_key": "costOfLiving",
+    "label": "Fagforeninger & A-kasser",
+    "description": "Kontingenter til fagforeninger og arbejdsløshedskasser"
+  },
+  {
+    "id": "d7b20f79-8fc0-456b-9b00-1e3c78b66c6a",
+    "key": "vacation",
+    "category_key": "experiencesAndLeisure",
+    "label": "Ferie",
+    "description": "Udgifter til rejser og ferieaktiviteter"
+  },
+  {
+    "id": "49e804c9-cdc6-4f39-8ebe-83572bfeae64",
+    "key": "vacation",
+    "category_key": "income",
+    "label": "Feriepenge",
+    "description": "Udbetaling af feriepenge fra arbejdsgiver"
+  },
+  {
+    "id": "8e03483d-670d-4753-8c9f-bea65d918835",
+    "key": "fitness",
+    "category_key": "experiencesAndLeisure",
+    "label": "Fitness & Sport",
+    "description": "Medlemskaber og udstyr til fitness og sport"
+  },
+  {
+    "id": "fe16688b-243e-47cd-b452-bfc6f7d49de8",
+    "key": "memberships",
+    "category_key": "costOfLiving",
+    "label": "Foreninger & Kontingenter",
+    "description": "Medlemskaber og kontingenter til foreninger"
+  },
+  {
+    "id": "0da85660-0624-4110-bb94-d7cc68736abe",
+    "key": "insurance",
+    "category_key": "transport",
+    "label": "Forsikringer",
+    "description": "Bilforsikringer og andre transportrelaterede forsikringer"
+  },
+  {
+    "id": "b77b39e3-73e7-4cb8-9122-f9ad853c332b",
+    "key": "insurance",
+    "category_key": "experiencesAndLeisure",
+    "label": "Forsikringer",
+    "description": "Rejseforsikringer og andre fritidsrelaterede forsikringer"
+  },
+  {
+    "id": "fdfbe1cf-87ff-4a8e-b542-c67ef8f228d6",
+    "key": "insurance",
+    "category_key": "costOfLiving",
+    "label": "Forsikringer",
+    "description": "Diverse forsikringspræmier"
+  },
+  {
+    "id": "d5cfc5d9-47e8-46a4-90cf-18f4a4607883",
+    "key": "insurance",
+    "category_key": "home",
+    "label": "Forsikringer",
+    "description": "Indboforsikring og boligrelaterede forsikringer"
+  },
+  {
+    "id": "951f4479-af4d-44cd-a34a-af3527970981",
+    "key": "utilities",
+    "category_key": "home",
+    "label": "Forsyning",
+    "description": "Udgifter til el, vand, varme og affaldshåndtering"
+  },
+  {
+    "id": "7d9ff5eb-b632-462e-8cfa-085b17c6b4cd",
+    "key": "grooming",
+    "category_key": "costOfLiving",
+    "label": "Frisør & Personlig Pleje",
+    "description": "Hårklip, skønhedspleje og personlig hygiejne"
+  },
+  {
+    "id": "28900e7f-9723-40ef-9b5b-dc5ae3041ba9",
+    "key": "birthdays",
+    "category_key": "celebrations",
+    "label": "Fødselsdage",
+    "description": "Udgifter til fødselsdagsfejringer og gaver"
+  },
+  {
+    "id": "b3985fae-37ce-463a-8a2e-98c52c5db085",
+    "key": "gaming",
+    "category_key": "experiencesAndLeisure",
+    "label": "Gaming & Legetøj",
+    "description": "Udgifter til spil og legetøj"
+  },
+  {
+    "id": "79ead701-30d8-4e85-8df0-2b6f3cb7f415",
+    "key": "garden",
+    "category_key": "home",
+    "label": "Have & Planter",
+    "description": "Planter, redskaber og vedligeholdelse af have"
+  },
+  {
+    "id": "74eab025-21cb-4e17-9f15-a977b68f077c",
+    "key": "hobby",
+    "category_key": "experiencesAndLeisure",
+    "label": "Hobby",
+    "description": "Udgifter til hobbyaktiviteter og materialer"
+  },
+  {
+    "id": "93ac775e-9b54-4dc5-916c-15b8c4d12013",
+    "key": "holidays",
+    "category_key": "celebrations",
+    "label": "Højtider & Begivenheder",
+    "description": "Udgifter til højtider og særlige begivenheder"
+  },
+  {
+    "id": "8a5b42a5-e911-49d0-86a2-196cadd688e1",
+    "key": "furnishings",
+    "category_key": "home",
+    "label": "Indretning & Udstyr",
+    "description": "Møbler, hvidevarer og andre bolig artikler"
+  },
+  {
+    "id": "699142f4-13a6-4a8c-9ff1-0e603bfaee80",
+    "key": "institutions",
+    "category_key": "costOfLiving",
+    "label": "Institutioner",
+    "description": "Betalinger til institutioner som børnehaver og skoler"
+  },
+  {
+    "id": "b34a8252-3823-436d-b880-ff6bf0ef38e2",
+    "key": "telecom",
+    "category_key": "costOfLiving",
+    "label": "Internet & Telefoni",
+    "description": "Abonnementer på internet og telefonitjenester"
+  },
+  {
+    "id": "24fead77-ce9e-428c-b1b6-4993ac5d80a5",
+    "key": "investment",
+    "category_key": "income",
+    "label": "Investeringer",
+    "description": "Afkast fra aktier, fonde og lignende"
+  },
+  {
+    "id": "ab471563-7f53-4225-8cab-bbe50bb416d9",
+    "key": "speciality",
+    "category_key": "groceries",
+    "label": "Kiosk, Bager & Specialbutikker",
+    "description": "Indkøb i kiosker, bagerier og specialbutikker"
+  },
+  {
+    "id": "34d38bae-e442-46ac-b920-0a32d060298d",
+    "key": "salary",
+    "category_key": "income",
+    "label": "Løn",
+    "description": "Indkomst fra ansættelse og arbejde"
+  },
+  {
+    "id": "12002940-432f-41b8-a74d-097045b39a45",
+    "key": "public",
+    "category_key": "transport",
+    "label": "Offentlig",
+    "description": "Transport med bus, tog, metro eller lignende"
+  },
+  {
+    "id": "3828cc7f-e8bb-415d-82e5-88e98950c3e4",
+    "key": "software",
+    "category_key": "experiencesAndLeisure",
+    "label": "Online Tjenester & Software",
+    "description": "Abonnementer på online tjenester og software"
+  },
+  {
+    "id": "26d6b594-47b2-4bf0-a2f8-d15cf3e0d0ac",
+    "key": "tax",
+    "category_key": "income",
+    "label": "Overskydende Skat",
+    "description": "Tilbagebetaling af for meget betalt skat"
+  },
+  {
+    "id": "eda143eb-0b69-4dd7-b740-43e4ecadbe74",
+    "key": "parking",
+    "category_key": "transport",
+    "label": "Parkering",
+    "description": "Parkeringsafgifter og abonnementer"
+  },
+  {
+    "id": "7b9d061d-68d8-4166-b8aa-1af7ceaeea6e",
+    "key": "pension",
+    "category_key": "savingsAndInvestments",
+    "label": "Pensionsopsparing",
+    "description": "Indbetalinger til pension og aldersopsparing"
+  },
+  {
+    "id": "3df5d6e7-2b71-4644-aca4-8d8343ba35ba",
+    "key": "interest",
+    "category_key": "income",
+    "label": "Renteindtægter",
+    "description": "Indtægter fra opsparing og bankkonti"
+  },
+  {
+    "id": "af527b64-c91c-4df8-ba57-801f30153604",
+    "key": "safety",
+    "category_key": "home",
+    "label": "Sikkerhed",
+    "description": "Alarm, overvågning og andre sikkerhedssystemer"
+  },
+  {
+    "id": "1310fcfc-c53b-4b2e-864b-8a6d674608f1",
+    "key": "tax",
+    "category_key": "home",
+    "label": "Skatter",
+    "description": "Skat og afgifter forbundet med ejendommen"
+  },
+  {
+    "id": "6ad1ceb3-39be-4304-9324-4c40610852e0",
+    "key": "streaming",
+    "category_key": "experiencesAndLeisure",
+    "label": "TV & Streaming",
+    "description": "Abonnementer på tv-kanaler og streamingtjenester"
+  },
+  {
+    "id": "eed2a9e3-a8c5-412f-bf44-28a763d7fa0e",
+    "key": "takeaway",
+    "category_key": "groceries",
+    "label": "Takeaway & Kantine",
+    "description": "Mad og drikke købt ude eller spist på arbejdet"
+  },
+  {
+    "id": "0372adb1-e391-4016-bb2b-316f8aaa3f69",
+    "key": "tithe",
+    "category_key": "charity",
+    "label": "Tiende",
+    "description": "Religiøst motiverede donationer"
+  },
+  {
+    "id": "faaa7012-62ea-4f0a-91d5-237a4dc6a93c",
+    "key": "clothing",
+    "category_key": "costOfLiving",
+    "label": "Tøj, Sko & Accessories",
+    "description": "Udgifter til tøj, sko og personlige accessories"
+  },
+  {
+    "id": "85287e3f-d149-49ec-b72c-adad319aa24b",
+    "key": "uncategorized",
+    "category_key": "uncategorized",
+    "label": "Ukategoriseret",
+    "description": "Udgifter der ikke passer i eksisterende kategorier"
+  },
+  {
+    "id": "f405cdac-7565-4c2b-9463-541daecad26a",
+    "key": "maintenance",
+    "category_key": "home",
+    "label": "Vedligehold",
+    "description": "Reparationer og vedligeholdelse af hjemmet"
+  },
+  {
+    "id": "f12ad362-0c81-49d4-8c22-3f42dcb8a94c",
+    "key": "maintenance",
+    "category_key": "transport",
+    "label": "Vedligeholdelse",
+    "description": "Reparationer, service og bilvedligehold"
+  },
+  {
+    "id": "06f179fc-ed20-4816-beee-34327f428424",
+    "key": "media",
+    "category_key": "experiencesAndLeisure",
+    "label": "Vinyl, Musik & Bøger",
+    "description": "Køb af musik, bøger og relaterede medier"
+  }
+]

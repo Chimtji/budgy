@@ -5,6 +5,9 @@ import { createTheme } from '@mantine/core';
 export const theme = createTheme({
   autoContrast: true,
   cursorType: 'pointer',
+  fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif',
+  primaryColor: 'violet',
+  defaultRadius: 'md',
   breakpoints: {
     xxl: '120em',
   },
@@ -22,12 +25,43 @@ export const theme = createTheme({
       '#0c111d',
     ],
   },
-  primaryColor: 'cyan',
+  components: {
+    Paper: {
+      defaultProps: {
+        shadow: 'none',
+        radius: 'md',
+        withBorder: true,
+      },
+    },
+    Card: {
+      defaultProps: {
+        shadow: 'none',
+        radius: 'md',
+        withBorder: true,
+      },
+    },
+    Button: {
+      defaultProps: {
+        radius: 'md',
+      },
+    },
+    Modal: {
+      defaultProps: {
+        radius: 'lg',
+        overlayProps: { blur: 3 },
+      },
+    },
+    Table: {
+      defaultProps: {
+        verticalSpacing: 'sm',
+        horizontalSpacing: 'md',
+      },
+    },
+  },
   other: {
     colorMatches: [
       ['orange', 'red', 'yellow', 'pink', 'grape'],
       ['blue', 'indigo', 'cyan', 'teal', 'green'],
     ],
   },
-  /* Put your mantine theme override here */
 });
