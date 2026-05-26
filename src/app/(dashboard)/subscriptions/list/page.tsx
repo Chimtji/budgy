@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   IconAdjustments,
   IconArrowBack,
+  IconBan,
   IconCheck,
   IconChevronDown,
   IconChevronRight,
@@ -39,8 +40,10 @@ import {
   UnstyledButton,
 } from '@mantine/core';
 import { showErrorNotification, showSuccessNotification } from '@/notifications/feedback';
+import { type TSubscriptionMatcher } from '@/service/database/subscriptions/getAll';
 import { type TTransaction } from '@/service/database/transactions/getAll';
 import {
+  CADENCE_LABELS,
   CADENCE_OPTIONS,
   detectSubscriptions,
   estimateMonthly,
@@ -104,6 +107,7 @@ function getSubscriptionStatus(
   sub: TDetectedSubscription,
   cadence: TSubscriptionCadence
 ): TSubscriptionStatus {
+  if (sub.cancelledAt) return 'cancelled';
   const periodDays = CADENCE_PERIOD_DAYS[cadence];
   const daysSince = (Date.now() - new Date(sub.lastChargedDate).getTime()) / (1000 * 60 * 60 * 24);
   if (daysSince <= periodDays * 1.5) return 'active';
@@ -128,6 +132,7 @@ function getSourceBadge(sub: TDetectedSubscription): { label: string; color: str
   ) {
     return { label: 'Betalingsservice', color: 'violet' };
   }
+  if (sub.source === 'manual') return { label: 'Abonnement', color: 'blue' };
   return null;
 }
 
@@ -183,6 +188,26 @@ function resolveConfirmArgs(sub: TDetectedSubscription): {
       amountMax,
     };
   }
+  // Segment-based keys: "seg:<segment>:company:<name>" or "seg:<segment>:desc:<prefix>"
+  if (sub.matcherValue.startsWith('seg:')) {
+    const inner = sub.matcherValue.replace(/^seg:[^:]+:/, '');
+    if (inner.startsWith('company:')) {
+      return {
+        matcherType: 'company',
+        matcherValue: inner.slice('company:'.length),
+        amountMin,
+        amountMax,
+      };
+    }
+    if (inner.startsWith('desc:')) {
+      return {
+        matcherType: 'description_prefix',
+        matcherValue: inner.slice('desc:'.length),
+        amountMin,
+        amountMax,
+      };
+    }
+  }
   return { matcherType: 'company', matcherValue: sub.matcherValue, amountMin, amountMax };
 }
 
@@ -209,6 +234,7 @@ export default function SubscriptionsListPage() {
     setCadence,
     setNote,
     setAmountRange,
+    setCancelledAt,
     ignoreDetection,
     unignoreDetection,
   } = useSubscriptionsStore(
@@ -221,6 +247,7 @@ export default function SubscriptionsListPage() {
       setCadence: s.setCadence,
       setNote: s.setNote,
       setAmountRange: s.setAmountRange,
+      setCancelledAt: s.setCancelledAt,
       ignoreDetection: s.ignoreDetection,
       unignoreDetection: s.unignoreDetection,
     }))
@@ -249,9 +276,9 @@ export default function SubscriptionsListPage() {
   const [splitSelection, setSplitSelection] = useState<string[]>([]);
   const [splitModalOpen, setSplitModalOpen] = useState(false);
   const [splitName, setSplitName] = useState('');
-  const [splitMedianAmount, setSplitMedianAmount] = useState(0);
   const [splitTolerance, setSplitTolerance] = useState<number | string>(10);
-  const [splittingConfirm, setSplittingConfirm] = useState(false);
+  const [splitPreview, setSplitPreview] = useState<TDetectedSubscription | null>(null);
+  const [pendingSplits, setPendingSplits] = useState<TDetectedSubscription[]>([]);
   const [missingModalOpen, setMissingModalOpen] = useState(false);
   const [missingSearch, setMissingSearch] = useState('');
   const [missingSelection, setMissingSelection] = useState<string[]>([]);
@@ -294,10 +321,10 @@ export default function SubscriptionsListPage() {
 
   const detected = useMemo(
     () =>
-      allSubscriptions.filter(
-        (s) => s.source !== 'manual' && !ignoredDetectionKeys.includes(s.key)
+      [...allSubscriptions.filter((s) => s.source !== 'manual'), ...pendingSplits].filter(
+        (s) => !ignoredDetectionKeys.includes(s.key)
       ),
-    [allSubscriptions, ignoredDetectionKeys]
+    [allSubscriptions, ignoredDetectionKeys, pendingSplits]
   );
 
   const ignored = useMemo(
@@ -340,11 +367,10 @@ export default function SubscriptionsListPage() {
       ...selectedSub.transactions,
       ...transactions.filter((t) => extraIds.includes(t.id)),
     ];
-    // For confirmed (manual) subs, always filter by cadence for 1:1 parity
+    // For confirmed (manual) subs, show all matched transactions as-is — the user
+    // explicitly selected them, so no charge-day or period deduplication should be applied.
     if (selectedSub.source === 'manual') {
-      return refineToSubscriptionTransactions(allTxns, cadence).sort((a, b) =>
-        b.date.localeCompare(a.date)
-      );
+      return allTxns.sort((a, b) => b.date.localeCompare(a.date));
     }
     // For detected, keep previous logic
     return allTxns.sort((a, b) => b.date.localeCompare(a.date));
@@ -420,41 +446,57 @@ export default function SubscriptionsListPage() {
   const openSplitModal = () => {
     if (!selectedSub) return;
     const selectedTxns = selectedSub.transactions.filter((t) => splitSelection.includes(t.id));
-    const amounts = selectedTxns.map((t) => Math.abs(t.amount)).sort((a, b) => a - b);
-    const mid = Math.floor(amounts.length / 2);
-    const median = amounts.length % 2 !== 0 ? amounts[mid] : (amounts[mid - 1] + amounts[mid]) / 2;
-    setSplitName(selectedSub.name);
-    setSplitMedianAmount(Math.round(median));
+    if (selectedTxns.length === 0) return;
+    const cadence = getEffectiveCadence(selectedSub);
+    const descs = selectedTxns.map((t) =>
+      (t.description ?? t.raw_description ?? '').replace(/^BS\s+/i, '').toLowerCase()
+    );
+    const lcp = descs.reduce((a, b) => {
+      let i = 0;
+      while (i < a.length && i < b.length && a[i] === b[i]) i++;
+      return a.slice(0, i);
+    }, descs[0] ?? '');
+    const matcherValue = `bs ${lcp.replace(/[\s\u2013\-\/|]+$/, '').trim()}`;
+    const firstDesc = (selectedTxns[0].description ?? selectedTxns[0].raw_description ?? '')
+      .replace(/^BS\s+/i, '')
+      .trim();
+    const displayName = firstDesc.split(/\s+[\u2013\-\/|]\s+/)[0].trim() || selectedSub.name;
+    const preview: TDetectedSubscription = {
+      key: `split:${Date.now()}`,
+      name: displayName,
+      source: 'bs',
+      matcherType: 'bs_auto',
+      matcherValue,
+      transactions: [...selectedTxns].sort((a, b) => b.date.localeCompare(a.date)),
+      cadence,
+      estimatedMonthly: estimateMonthly(selectedTxns, cadence),
+      lastChargedDate: selectedTxns
+        .map((t) => t.date)
+        .sort()
+        .at(-1)!,
+      isManual: false,
+    };
+    setSplitName(displayName);
     setSplitTolerance(10);
+    setSplitPreview(preview);
     setSplitModalOpen(true);
   };
 
-  const handleSplitConfirm = async () => {
-    if (!selectedSub || splitSelection.length === 0) return;
-    setSplittingConfirm(true);
-    const { matcherValue } = resolveConfirmArgs(selectedSub);
-    const tol = typeof splitTolerance === 'number' ? splitTolerance / 100 : 0.1;
-    const amountMin = Math.floor(splitMedianAmount * (1 - tol));
-    const amountMax = Math.ceil(splitMedianAmount * (1 + tol));
-    const result = await confirmDetection(
-      splitName,
-      'description_prefix',
-      matcherValue,
-      getEffectiveCadence(selectedSub),
-      amountMin,
-      amountMax
-    );
-    setSplittingConfirm(false);
-    if (result) {
-      showSuccessNotification({
-        title: 'Bekræftet',
-        message: `${splitName} er tilføjet som separat abonnement`,
-      });
-      setSplitModalOpen(false);
-      setSplitSelection([]);
-      handleFilterChange('confirmed');
-      setSelectedKey(`manual:${result.id}`);
-    }
+  const handleSplitCreate = () => {
+    if (!splitPreview) return;
+    const newSplit = { ...splitPreview, name: splitName.trim() || splitPreview.name };
+    const tol = typeof splitTolerance === 'number' ? splitTolerance : 10;
+    setPendingSplits((prev) => [...prev, newSplit]);
+    setDetectedTolerances((prev) => ({ ...prev, [newSplit.key]: tol }));
+    setSplitModalOpen(false);
+    setSplitSelection([]);
+    setSplitPreview(null);
+    handleFilterChange('detected');
+    setSelectedKey(newSplit.key);
+    showSuccessNotification({
+      title: 'Opdelt',
+      message: `${newSplit.name} er klar til bekræftelse under Opdaget`,
+    });
   };
 
   const handleConfirm = async (sub: TDetectedSubscription) => {
@@ -464,15 +506,29 @@ export default function SubscriptionsListPage() {
     const extraTxns = transactions.filter((t) => extraIds.includes(t.id));
     // Always use the exact matcher constraints that produced the detected sub
     // (type, value, cadence, amountMin, amountMax) for 1:1 parity
-    let matcherType =
+    let matcherType: TSubscriptionMatcher['matcher_type'] =
       sub.matcherType === 'bs_auto' || sub.matcherType === 'description_prefix'
         ? 'description_prefix'
         : sub.matcherType === 'company_auto' || sub.matcherType === 'company'
           ? 'company'
           : 'description_contains';
     let matcherValue = sub.matcherValue;
-    if (matcherType === 'company' && matcherValue.startsWith('company:')) {
+    // Strip well-known key prefixes used internally by the detector
+    if (matcherValue.startsWith('seg:')) {
+      // "seg:<segment>:company:<name>" or "seg:<segment>:desc:<prefix>"
+      const inner = matcherValue.replace(/^seg:[^:]+:/, '');
+      if (inner.startsWith('company:')) {
+        matcherType = 'company';
+        matcherValue = inner.slice('company:'.length);
+      } else if (inner.startsWith('desc:')) {
+        matcherType = 'description_prefix';
+        matcherValue = inner.slice('desc:'.length);
+      }
+    } else if (matcherType === 'company' && matcherValue.startsWith('company:')) {
       matcherValue = matcherValue.slice('company:'.length);
+    } else if (matcherValue.startsWith('desc:')) {
+      matcherType = 'description_prefix';
+      matcherValue = matcherValue.slice('desc:'.length);
     }
     const cadence = getEffectiveCadence(sub);
     // If user customized, recalc matcherValue/amounts, else use detected sub's constraints
@@ -505,10 +561,26 @@ export default function SubscriptionsListPage() {
         amountMax = Math.ceil(Math.max(...amounts) * (1 + tol));
       }
     } else {
-      // Always use the detected sub's constraints for ALL matcher types
-      const allTxns = refineToSubscriptionTransactions(sub.transactions, cadence);
-      const amounts = allTxns.map((t) => Math.abs(t.amount));
-      if (amounts.length > 0 && !amounts.every((a) => a === amounts[0])) {
+      // sub.transactions are already refined during detection — use them directly.
+      const amounts = sub.transactions.map((t) => Math.abs(t.amount));
+      if (sub.matcherType === 'bs_auto') {
+        // For BS auto, derive the bs-prefixed description_prefix matcherValue from the LCP
+        // of the transaction descriptions so the matcher actually matches descriptions
+        // that start with "BS ".
+        const descs = sub.transactions.map((t) =>
+          (t.description ?? t.raw_description ?? '').replace(/^BS\s+/i, '').toLowerCase()
+        );
+        const lcp = descs.reduce((a, b) => {
+          let i = 0;
+          while (i < a.length && i < b.length && a[i] === b[i]) i++;
+          return a.slice(0, i);
+        }, descs[0] ?? '');
+        matcherValue = `bs ${lcp.replace(/[\s\u2013\-\/|]+$/, '').trim()}`;
+      }
+      if (amounts.length > 0 && sub.matcherType !== 'bs_auto') {
+        // Detection uses AMOUNT_CLUSTER_TOLERANCE=0 and MAX_CV_RECURRING=0, so all
+        // amounts in the detected cluster are guaranteed identical. Pin to exact amount
+        // so the confirmed matcher doesn't pick up same-company purchases at other prices.
         amountMin = Math.min(...amounts);
         amountMax = Math.max(...amounts);
       } else {
@@ -535,6 +607,7 @@ export default function SubscriptionsListPage() {
     );
     setConfirming(null);
     if (result) {
+      setPendingSplits((prev) => prev.filter((s) => s.key !== sub.key));
       await Promise.all([initMatchers(), initTxns({})]);
       showSuccessNotification({
         title: 'Bekræftet',
@@ -661,13 +734,11 @@ export default function SubscriptionsListPage() {
                       >
                         <Group justify="space-between" wrap="nowrap">
                           <Group gap="sm" wrap="nowrap" style={{ minWidth: 0 }}>
-                            {firstTxn?.company_name && (
-                              <CompanyLogo
-                                domain={firstTxn.company_domain}
-                                name={firstTxn.company_name}
-                                size={28}
-                              />
-                            )}
+                            <CompanyLogo
+                              domain={firstTxn?.company_domain ?? null}
+                              name={firstTxn?.company_name ?? sub.name}
+                              size={28}
+                            />
                             <Stack gap={1} style={{ minWidth: 0 }}>
                               <Text
                                 size="sm"
@@ -765,6 +836,25 @@ export default function SubscriptionsListPage() {
                                     />
                                   </HoverCard.Dropdown>
                                 </HoverCard>
+                                <ActionIcon
+                                  variant={sub.cancelledAt ? 'light' : 'subtle'}
+                                  color={sub.cancelledAt ? 'red' : 'gray'}
+                                  size="sm"
+                                  title={
+                                    sub.cancelledAt
+                                      ? 'Genaktiver abonnement'
+                                      : 'Markér som afsluttet'
+                                  }
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setCancelledAt(
+                                      sub.manualMatcherId!,
+                                      sub.cancelledAt ? null : new Date().toISOString()
+                                    );
+                                  }}
+                                >
+                                  <IconBan size={14} stroke={1.5} />
+                                </ActionIcon>
                                 <ActionIcon
                                   variant="subtle"
                                   color="red"
@@ -885,13 +975,11 @@ export default function SubscriptionsListPage() {
                 {/* Header */}
                 <Group justify="space-between" align="flex-start" wrap="nowrap">
                   <Group gap="sm">
-                    {selectedSub.transactions[0]?.company_name && (
-                      <CompanyLogo
-                        domain={selectedSub.transactions[0].company_domain}
-                        name={selectedSub.transactions[0].company_name}
-                        size={36}
-                      />
-                    )}
+                    <CompanyLogo
+                      domain={selectedSub.transactions[0]?.company_domain ?? null}
+                      name={selectedSub.transactions[0]?.company_name ?? selectedSub.name}
+                      size={36}
+                    />
                     <Stack gap={2}>
                       <Text fw={700} size="md">
                         {selectedSub.name}
@@ -1288,7 +1376,10 @@ export default function SubscriptionsListPage() {
 
       <Modal
         opened={splitModalOpen}
-        onClose={() => setSplitModalOpen(false)}
+        onClose={() => {
+          setSplitModalOpen(false);
+          setSplitPreview(null);
+        }}
         title={<Title order={4}>Opdel som separat abonnement</Title>}
         centered
         size="sm"
@@ -1300,25 +1391,75 @@ export default function SubscriptionsListPage() {
             value={splitName}
             onChange={(e) => setSplitName(e.currentTarget.value)}
           />
-          <NumberInput
-            label="Tolerance (%)"
-            description={`${formatDKK(Math.floor(splitMedianAmount * (1 - (typeof splitTolerance === 'number' ? splitTolerance / 100 : 0.1))))} – ${formatDKK(Math.ceil(splitMedianAmount * (1 + (typeof splitTolerance === 'number' ? splitTolerance / 100 : 0.1))))}`}
-            value={splitTolerance}
-            onChange={setSplitTolerance}
-            min={0}
-            max={100}
-            suffix=" %"
-            decimalScale={0}
-          />
-          <Text size="xs" c="dimmed">
-            Fremtidige opkrævninger inden for dette beløbsinterval matches med dette abonnement.
-          </Text>
+          {splitPreview && (
+            <Stack gap="xs">
+              <Group gap="xs">
+                <Badge variant="light" color="gray" radius="sm" size="sm">
+                  {CADENCE_LABELS[splitPreview.cadence]}
+                </Badge>
+                <Text size="sm" fw={500}>
+                  {formatDKK(splitPreview.estimatedMonthly)}/md. (estimeret)
+                </Text>
+              </Group>
+              <NumberInput
+                label="Tolerance (%)"
+                description={(() => {
+                  const amounts = splitPreview.transactions.map((t) => Math.abs(t.amount));
+                  const avg = amounts.reduce((s, v) => s + v, 0) / (amounts.length || 1);
+                  const tol = (typeof splitTolerance === 'number' ? splitTolerance : 10) / 100;
+                  return `${formatDKK(Math.floor(avg * (1 - tol)))} – ${formatDKK(Math.ceil(avg * (1 + tol)))}  matcher fremtidige opkrævninger inden for dette interval`;
+                })()}
+                value={splitTolerance}
+                onChange={setSplitTolerance}
+                min={0}
+                max={100}
+                suffix=" %"
+                decimalScale={0}
+              />
+              <Text
+                size="xs"
+                c="dimmed"
+                fw={600}
+                tt="uppercase"
+                style={{ letterSpacing: '0.05em' }}
+              >
+                {splitPreview.transactions.length} posteringer
+              </Text>
+              <Stack gap={4}>
+                {splitPreview.transactions.map((t) => (
+                  <Group
+                    key={t.id}
+                    justify="space-between"
+                    wrap="nowrap"
+                    px="sm"
+                    py={6}
+                    style={{
+                      borderRadius: 6,
+                      background: 'var(--mantine-color-default-hover)',
+                    }}
+                  >
+                    <Stack gap={0} style={{ minWidth: 0, flex: 1 }}>
+                      <Text size="xs" fw={500} truncate>
+                        {t.description}
+                      </Text>
+                      <Text size="xs" c="dimmed">
+                        {formatDate(t.date)}
+                      </Text>
+                    </Stack>
+                    <Text size="xs" fw={600} style={{ whiteSpace: 'nowrap' }}>
+                      {formatDKK(Math.abs(t.amount))}
+                    </Text>
+                  </Group>
+                ))}
+              </Stack>
+            </Stack>
+          )}
           <Button
-            loading={splittingConfirm}
-            onClick={handleSplitConfirm}
-            disabled={!splitName.trim()}
+            leftSection={<IconScissors size={14} stroke={1.5} />}
+            onClick={handleSplitCreate}
+            disabled={!splitName.trim() || !splitPreview}
           >
-            Bekræft
+            Opdel
           </Button>
         </Stack>
       </Modal>

@@ -12,7 +12,7 @@ const CompanyLogo: React.FC<TProps> = ({ domain, name, size = 28 }) => {
   if (!domain) {
     return (
       <Avatar size={size} radius="sm" color="violet" variant="light">
-        {name.charAt(0).toUpperCase()}
+        {name?.charAt(0).toUpperCase() ?? '?'}
       </Avatar>
     );
   }

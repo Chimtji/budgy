@@ -22,6 +22,7 @@ export type TDetectedSubscription = {
   isManual: boolean;
   manualMatcherId?: string;
   note?: string | null;
+  cancelledAt?: string | null;
 };
 
 export const CADENCE_LABELS: Record<TSubscriptionCadence, string> = {
@@ -52,7 +53,20 @@ const CADENCE_MONTHS: Record<TSubscriptionCadence, number> = {
   irregular: 1, // fall back to raw average
 };
 
-/** Snap a median interval (days) to the closest named cadence */
+/** Segments that are subscription-like by nature — detected with relaxed thresholds */
+const SUBSCRIPTION_SEGMENTS = new Set([
+  'unions', // Fagforeninger & A-kasser
+  'memberships', // Foreninger & Kontingenter
+  'insurance', // Forsikringer
+  'institutions', // Institutioner
+  'telecom', // Internet & Telefoni
+  'tithe', // Tiende
+  'loan', // Boliglån & Billån
+  'hoa', // Ejerforening
+  'utilities', // Forsyning
+  'software', // Online Tjenester & Software
+]);
+
 function snapCadence(medianDays: number): TSubscriptionCadence {
   const buckets: { cadence: TSubscriptionCadence; center: number; tolerance: number }[] = [
     { cadence: 'monthly', center: 30, tolerance: 12 },
@@ -333,8 +347,10 @@ export function detectSubscriptions(
 
     const cadence: TSubscriptionCadence =
       matcher.cadence ?? detectCadence(baseCluster, dataSpanDays);
-    // For manual matchers, skip charge-day filtering — the user has explicitly defined what to
-    // match, so we trust the matcher and only deduplicate by period to avoid double-counting.
+    // For manual matchers the user explicitly selected which transactions belong — never apply
+    // filterByChargeDay, since that heuristic can discard valid transactions whose charge day
+    // varies (e.g. two payments on the 1st and 28th would both be filtered out). Only
+    // deduplicateByPeriod is applied to avoid counting two charges in the same period twice.
     const refined = deduplicateByPeriod(baseCluster, cadence);
     if (refined.length === 0) continue;
     const key = `manual:${matcher.id}`;
@@ -354,6 +370,7 @@ export function detectSubscriptions(
       isManual: true,
       manualMatcherId: matcher.id,
       note: matcher.note ?? null,
+      cancelledAt: matcher.cancelled_at ?? null,
     });
   }
 
@@ -589,6 +606,60 @@ export function detectSubscriptions(
         isManual: false,
       });
     }
+  }
+
+  // ── 4. Segment-based detection — subscription-prone segments with relaxed thresholds ──────
+  const allClaimedIds = new Set<string>(
+    [...results.values()].flatMap((s) => s.transactions.map((t) => t.id))
+  );
+
+  const segmentCandidates = active.filter(
+    (t) =>
+      t.amount < 0 &&
+      t.segment_key !== null &&
+      SUBSCRIPTION_SEGMENTS.has(t.segment_key) &&
+      !allClaimedIds.has(t.id)
+  );
+
+  const bySegmentCompany = new Map<string, { groupName: string; txns: TTransaction[] }>();
+  for (const t of segmentCandidates) {
+    let groupKey: string;
+    let groupName: string;
+    if (t.company_name) {
+      groupKey = `seg:${t.segment_key}:company:${t.company_name.toLowerCase()}`;
+      groupName = t.company_name;
+    } else {
+      const desc = (t.description ?? t.raw_description ?? '').trim();
+      if (!desc) continue;
+      const prefix = desc.toLowerCase().split(/\s+/).slice(0, 3).join(' ');
+      groupKey = `seg:${t.segment_key}:desc:${prefix}`;
+      groupName = desc.split(/\s+/).slice(0, 3).join(' ');
+    }
+    if (!bySegmentCompany.has(groupKey)) bySegmentCompany.set(groupKey, { groupName, txns: [] });
+    bySegmentCompany.get(groupKey)!.txns.push(t);
+  }
+
+  for (const [groupKey, { groupName, txns }] of bySegmentCompany) {
+    if (results.has(groupKey)) continue;
+    if (txns.every((t) => allClaimedIds.has(t.id))) continue;
+    const cadence = detectCadence(txns, dataSpanDays);
+    const refined = deduplicateByPeriod(txns, cadence);
+    if (refined.length === 0) continue;
+    results.set(groupKey, {
+      key: groupKey,
+      name: groupName,
+      source: 'recurring',
+      matcherType: 'company_auto',
+      matcherValue: groupKey,
+      cadence,
+      transactions: refined.sort((a, b) => b.date.localeCompare(a.date)),
+      estimatedMonthly: estimateMonthly(refined, cadence),
+      lastChargedDate: refined
+        .map((t) => t.date)
+        .sort()
+        .at(-1)!,
+      isManual: false,
+    });
   }
 
   return [...results.values()].sort((a, b) => b.estimatedMonthly - a.estimatedMonthly);

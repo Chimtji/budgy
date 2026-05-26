@@ -13,6 +13,7 @@ import {
   updateSubscriptionCadence,
   type TSubscriptionCadence,
 } from '@/service/database/subscriptions/updateCadence';
+import { updateSubscriptionCancelledAt } from '@/service/database/subscriptions/updateCancelledAt';
 import { updateSubscriptionNote } from '@/service/database/subscriptions/updateNote';
 
 type TState = {
@@ -43,6 +44,7 @@ type TActions = {
   setCadence: (id: string, cadence: TSubscriptionCadence | null) => Promise<void>;
   setNote: (id: string, note: string | null) => Promise<void>;
   setAmountRange: (id: string, amountMin: number | null, amountMax: number | null) => Promise<void>;
+  setCancelledAt: (id: string, cancelledAt: string | null) => Promise<void>;
 };
 
 export const useSubscriptionsStore = create<TState & TActions>()(
@@ -171,6 +173,21 @@ export const useSubscriptionsStore = create<TState & TActions>()(
               m.amount_min = amountMin;
               m.amount_max = amountMax;
             }
+          });
+        },
+
+        setCancelledAt: async (id, cancelledAt) => {
+          const result = await updateSubscriptionCancelledAt(id, cancelledAt);
+          if (!result.success) {
+            showErrorNotification({
+              title: 'Fejl',
+              message: 'Kunne ikke opdatere abonnementstatus',
+            });
+            return;
+          }
+          set((state) => {
+            const m = state.matchers.find((m) => m.id === id);
+            if (m) m.cancelled_at = cancelledAt;
           });
         },
       }))

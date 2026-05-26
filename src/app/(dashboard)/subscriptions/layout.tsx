@@ -20,7 +20,7 @@ export default function SubscriptionsLayout({ children }: { children: React.Reac
       <Group justify="space-between" align="flex-end" pb="md" style={{ flexShrink: 0 }}>
         <Stack gap={4}>
           <Title order={2} fw={700} style={{ letterSpacing: '-0.5px' }}>
-            Abonnementer
+            Regninger
           </Title>
           <Text size="sm" c="dimmed">
             Faste betalinger opdaget og bekræftet fra dine transaktioner

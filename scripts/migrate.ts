@@ -168,6 +168,13 @@ function migrate() {
     // Column already exists
   }
 
+  try {
+    db.exec(`ALTER TABLE subscription_matchers ADD COLUMN cancelled_at TEXT DEFAULT NULL`);
+    console.log('Added column: subscription_matchers.cancelled_at');
+  } catch {
+    // Column already exists
+  }
+
   db.exec(`
     CREATE TABLE IF NOT EXISTS goals (
       id TEXT PRIMARY KEY,

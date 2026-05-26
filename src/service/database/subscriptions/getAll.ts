@@ -13,6 +13,7 @@ export type TSubscriptionMatcher = {
   amount_min: number | null;
   amount_max: number | null;
   note: string | null;
+  cancelled_at: string | null;
   created_at: string;
 };
 
@@ -24,7 +25,7 @@ export const getAllSubscriptionMatchers = async (): Promise<
 
   try {
     const rows = await sqlClient`
-      SELECT id, name, matcher_type, matcher_value, cadence, amount_min, amount_max, note, created_at
+      SELECT id, name, matcher_type, matcher_value, cadence, amount_min, amount_max, note, cancelled_at, created_at
       FROM subscription_matchers
       WHERE user_id = ${auth.data.user.id}
       ORDER BY created_at ASC

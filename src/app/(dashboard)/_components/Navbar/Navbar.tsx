@@ -18,19 +18,20 @@ import classes from './Navbar.module.css';
 
 const navItems = [
   {
-    href: '/overblik',
+    href: '/overview',
     label: 'Overblik',
     icon: IconLayoutDashboard,
-    activePaths: ['/categories/overview', '/subscriptions/overview'],
+    activePaths: ['/overview/general', '/overview/spending', '/overview/income'],
     subItems: [
-      { href: '/categories/overview', label: 'Kategorier' },
-      { href: '/subscriptions/overview', label: 'Abonnementer' },
+      { href: '/overview/general', label: 'Generelt' },
+      { href: '/overview/spending', label: 'Udgifter' },
+      { href: '/overview/income', label: 'Indkomst' },
     ],
   },
   { href: '/transactions', label: 'Transaktioner', icon: IconReceipt },
   { href: '/categories/list', label: 'Kategorier', icon: IconCategory },
   { href: '/companies', label: 'Virksomheder', icon: IconBuilding },
-  { href: '/subscriptions/list', label: 'Abonnementer', icon: IconRepeat },
+  { href: '/subscriptions/list', label: 'Regninger', icon: IconRepeat },
   { href: '/goals', label: 'Budgetmål', icon: IconTarget },
   { href: '/rules', label: 'Autoregler', icon: IconRobot },
 ];

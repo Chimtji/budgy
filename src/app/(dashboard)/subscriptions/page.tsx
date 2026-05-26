@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
 
 export default function SubscriptionsPage() {
-  redirect('/subscriptions/overview');
+  redirect('/subscriptions/list');
 }
