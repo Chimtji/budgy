@@ -1,9 +1,9 @@
 'use client';
 
 import { useMemo } from 'react';
+import { IconLayoutList, IconStack2 } from '@tabler/icons-react';
 import { DonutChart } from '@mantine/charts';
 import { Badge, Card, Group, Stack, Text, ThemeIcon } from '@mantine/core';
-import { IconLayoutList, IconStack2 } from '@tabler/icons-react';
 import type { TTransaction } from '@/service/database/transactions/getAll';
 
 type TSegment = { key: string; category_key: string; label: string };
@@ -15,7 +15,16 @@ type TProps = {
 };
 
 const FALLBACK_COLORS = [
-  'teal', 'green', 'cyan', 'blue', 'violet', 'grape', 'pink', 'yellow', 'orange', 'red',
+  'teal',
+  'green',
+  'cyan',
+  'blue',
+  'violet',
+  'grape',
+  'pink',
+  'yellow',
+  'orange',
+  'red',
 ];
 
 const formatDKK = (n: number) =>
@@ -62,9 +71,12 @@ const IncomeDonutChart: React.FC<TProps> = ({ transactions, segments, selectedSe
     return { data, title: 'Posteringer' };
   }, [transactions, segments, selectedSegment]);
 
-  const titleIcon = title === 'Segmenter'
-    ? <IconStack2 size={14} stroke={1.5} />
-    : <IconLayoutList size={14} stroke={1.5} />;
+  const titleIcon =
+    title === 'Segmenter' ? (
+      <IconStack2 size={14} stroke={1.5} />
+    ) : (
+      <IconLayoutList size={14} stroke={1.5} />
+    );
 
   return (
     <Card withBorder p="md">
@@ -77,7 +89,9 @@ const IncomeDonutChart: React.FC<TProps> = ({ transactions, segments, selectedSe
         </Text>
       </Group>
       {data.length === 0 ? (
-        <Text size="sm" c="dimmed" ta="center" py="sm">Ingen data</Text>
+        <Text size="sm" c="dimmed" ta="center" py="sm">
+          Ingen data
+        </Text>
       ) : (
         <Stack gap="md" align="center">
           <DonutChart
@@ -96,11 +110,25 @@ const IncomeDonutChart: React.FC<TProps> = ({ transactions, segments, selectedSe
                 const pct = total > 0 ? Math.round((item.value / total) * 100) : 0;
                 return (
                   <Group key={item.name} gap="xs" wrap="nowrap">
-                    <div style={{ width: 10, height: 10, borderRadius: 2, background: cssVar, flexShrink: 0 }} />
-                    <Text size="sm" fw={500} truncate style={{ flex: 1 }}>{item.name}</Text>
+                    <div
+                      style={{
+                        width: 10,
+                        height: 10,
+                        borderRadius: 2,
+                        background: cssVar,
+                        flexShrink: 0,
+                      }}
+                    />
+                    <Text size="sm" fw={500} truncate style={{ flex: 1 }}>
+                      {item.name}
+                    </Text>
                     <Group gap={4} style={{ flexShrink: 0 }}>
-                      <Text size="xs" c="dimmed">{formatDKK(item.value)}</Text>
-                      <Badge variant="light" color="gray" radius="sm" size="sm">{pct} %</Badge>
+                      <Text size="xs" c="dimmed">
+                        {formatDKK(item.value)}
+                      </Text>
+                      <Badge variant="light" color="gray" radius="sm" size="sm">
+                        {pct} %
+                      </Badge>
                     </Group>
                   </Group>
                 );

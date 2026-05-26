@@ -1,8 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useShallow } from 'zustand/shallow';
-import { Card, Grid, Group, Loader, Select, SimpleGrid, Stack, Table, Text, ThemeIcon, Title, Tooltip } from '@mantine/core';
 import {
   IconBriefcase,
   IconCalendarEvent,
@@ -10,10 +8,25 @@ import {
   IconSum,
   IconTrendingUp,
 } from '@tabler/icons-react';
+import { useShallow } from 'zustand/shallow';
+import {
+  Card,
+  Grid,
+  Group,
+  Loader,
+  Select,
+  SimpleGrid,
+  Stack,
+  Table,
+  Text,
+  ThemeIcon,
+  Title,
+  Tooltip,
+} from '@mantine/core';
 import { getAllTransactions, type TTransaction } from '@/service/database/transactions/getAll';
 import { useCategoriesStore } from '@/stores/categories/categoriesStore';
-import MonthlyIncomeChart from '../_components/MonthlyIncomeChart';
 import IncomeDonutChart from '../_components/IncomeDonutChart';
+import MonthlyIncomeChart from '../_components/MonthlyIncomeChart';
 
 const formatDKK = (n: number) =>
   new Intl.NumberFormat('da-DK', {
@@ -38,12 +51,20 @@ const getCutoff = (interval: string): string | null => {
   }
 };
 
-const StatCard: React.FC<{ label: string; value: string; sub?: string; valueColor?: string; icon?: React.ReactNode }> = ({
-  label, value, sub, valueColor, icon,
-}) => (
+const StatCard: React.FC<{
+  label: string;
+  value: string;
+  sub?: string;
+  valueColor?: string;
+  icon?: React.ReactNode;
+}> = ({ label, value, sub, valueColor, icon }) => (
   <Card withBorder p="lg" style={{ height: '100%' }}>
     <Group gap={8} mb={6}>
-      {icon && <ThemeIcon size={22} radius="md" variant="light" color="teal">{icon}</ThemeIcon>}
+      {icon && (
+        <ThemeIcon size={22} radius="md" variant="light" color="teal">
+          {icon}
+        </ThemeIcon>
+      )}
       <Text size="xs" c="dimmed" tt="uppercase" fw={700} style={{ letterSpacing: '0.06em' }}>
         {label}
       </Text>
@@ -51,14 +72,16 @@ const StatCard: React.FC<{ label: string; value: string; sub?: string; valueColo
     <Text fw={800} style={{ fontSize: 22, letterSpacing: '-0.5px', lineHeight: 1 }} c={valueColor}>
       {value}
     </Text>
-    {sub && <Text size="xs" c="dimmed" mt={4}>{sub}</Text>}
+    {sub && (
+      <Text size="xs" c="dimmed" mt={4}>
+        {sub}
+      </Text>
+    )}
   </Card>
 );
 
 export default function IncomeOverviewPage() {
-  const { segments = [] } = useCategoriesStore(
-    useShallow((s) => ({ segments: s.segments }))
-  );
+  const { segments = [] } = useCategoriesStore(useShallow((s) => ({ segments: s.segments })));
 
   const [allTransactions, setAllTransactions] = useState<TTransaction[]>([]);
   const [loading, setLoading] = useState(true);
@@ -78,15 +101,16 @@ export default function IncomeOverviewPage() {
     [segments]
   );
 
-  const segmentData = useMemo(() => [
-    { value: 'all', label: 'Alle segmenter' },
-    ...incomeSegments.map((s) => ({ value: s.key, label: s.label })),
-  ], [incomeSegments]);
+  const segmentData = useMemo(
+    () => [
+      { value: 'all', label: 'Alle segmenter' },
+      ...incomeSegments.map((s) => ({ value: s.key, label: s.label })),
+    ],
+    [incomeSegments]
+  );
 
   const transactions = useMemo(() => {
-    let txns = allTransactions.filter(
-      (t) => t.amount > 0 && t.category_key === 'income'
-    );
+    let txns = allTransactions.filter((t) => t.amount > 0 && t.category_key === 'income');
     const cutoff = getCutoff(interval);
     if (cutoff) txns = txns.filter((t) => t.date >= cutoff);
     if (selectedSegment !== 'all') txns = txns.filter((t) => t.segment_key === selectedSegment);
@@ -119,12 +143,13 @@ export default function IncomeOverviewPage() {
   }, [transactions]);
 
   const lønSources = useMemo(() => {
-    const lønTxns = allTransactions.filter(
-      (t) => t.amount > 0 && t.segment_key === 'salary'
-    );
+    const lønTxns = allTransactions.filter((t) => t.amount > 0 && t.segment_key === 'salary');
     const cutoff = getCutoff(interval);
     const filtered = cutoff ? lønTxns.filter((t) => t.date >= cutoff) : lønTxns;
-    const byName = new Map<string, { total: number; count: number; latestDate: string; latestAmount: number }>();
+    const byName = new Map<
+      string,
+      { total: number; count: number; latestDate: string; latestAmount: number }
+    >();
     for (const t of filtered) {
       const key = t.company_name ?? t.description ?? 'Ukendt';
       const cur = byName.get(key) ?? { total: 0, count: 0, latestDate: '', latestAmount: 0 };
@@ -166,13 +191,18 @@ export default function IncomeOverviewPage() {
     );
   }
 
-  const trendLabel = slopePerMonth != null ? `${slopePerMonth >= 0 ? '+' : ''}${slopePerMonth.toFixed(1)} % / md.` : '–';
+  const trendLabel =
+    slopePerMonth != null
+      ? `${slopePerMonth >= 0 ? '+' : ''}${slopePerMonth.toFixed(1)} % / md.`
+      : '–';
   const trendColor = slopePerMonth == null ? undefined : slopePerMonth > 0 ? 'teal.6' : 'red.6';
 
   return (
     <Stack gap="md">
       <Group justify="space-between" align="center">
-        <Title order={2} fw={700} style={{ letterSpacing: '-0.5px' }}>Indkomst</Title>
+        <Title order={2} fw={700} style={{ letterSpacing: '-0.5px' }}>
+          Indkomst
+        </Title>
         <Select
           size="xs"
           data={[
@@ -221,33 +251,66 @@ export default function IncomeOverviewPage() {
                   <ThemeIcon size={22} radius="md" variant="light" color="teal">
                     <IconBriefcase size={14} stroke={1.5} />
                   </ThemeIcon>
-                  <Text size="xs" c="dimmed" tt="uppercase" fw={600} style={{ letterSpacing: '0.05em' }}>
+                  <Text
+                    size="xs"
+                    c="dimmed"
+                    tt="uppercase"
+                    fw={600}
+                    style={{ letterSpacing: '0.05em' }}
+                  >
                     Lønkilder
                   </Text>
                 </Group>
                 <Table style={{ borderCollapse: 'separate', borderSpacing: '0 4px' }}>
                   <Table.Thead>
                     <Table.Tr>
-                      <Table.Th><Text size="xs" c="dimmed">Kilde</Text></Table.Th>
-                      <Table.Th ta="right"><Text size="xs" c="dimmed">Antal</Text></Table.Th>
-                      <Table.Th ta="right"><Text size="xs" c="dimmed">Gennemsnit</Text></Table.Th>
-                      <Table.Th ta="right"><Text size="xs" c="dimmed">Seneste</Text></Table.Th>
+                      <Table.Th>
+                        <Text size="xs" c="dimmed">
+                          Kilde
+                        </Text>
+                      </Table.Th>
+                      <Table.Th ta="right">
+                        <Text size="xs" c="dimmed">
+                          Antal
+                        </Text>
+                      </Table.Th>
+                      <Table.Th ta="right">
+                        <Text size="xs" c="dimmed">
+                          Gennemsnit
+                        </Text>
+                      </Table.Th>
+                      <Table.Th ta="right">
+                        <Text size="xs" c="dimmed">
+                          Seneste
+                        </Text>
+                      </Table.Th>
                     </Table.Tr>
                   </Table.Thead>
                   <Table.Tbody>
                     {lønSources.map((s) => (
-                      <Table.Tr key={s.label} style={{ background: 'var(--mantine-color-default-hover)' }}>
+                      <Table.Tr
+                        key={s.label}
+                        style={{ background: 'var(--mantine-color-default-hover)' }}
+                      >
                         <Table.Td style={{ borderRadius: '6px 0 0 6px' }}>
-                          <Text size="sm" fw={500}>{s.label}</Text>
+                          <Text size="sm" fw={500}>
+                            {s.label}
+                          </Text>
                         </Table.Td>
                         <Table.Td ta="right">
-                          <Text size="sm" c="dimmed">{s.count} gange</Text>
+                          <Text size="sm" c="dimmed">
+                            {s.count} gange
+                          </Text>
                         </Table.Td>
                         <Table.Td ta="right">
-                          <Text size="sm" fw={600}>{formatDKK(s.avg)}</Text>
+                          <Text size="sm" fw={600}>
+                            {formatDKK(s.avg)}
+                          </Text>
                         </Table.Td>
                         <Table.Td style={{ borderRadius: '0 6px 6px 0' }} ta="right">
-                          <Text size="sm" fw={600}>{formatDKK(s.latestAmount)}</Text>
+                          <Text size="sm" fw={600}>
+                            {formatDKK(s.latestAmount)}
+                          </Text>
                         </Table.Td>
                       </Table.Tr>
                     ))}
@@ -270,7 +333,13 @@ export default function IncomeOverviewPage() {
                   <ThemeIcon size={22} radius="md" variant="light" color="teal">
                     <IconCalendarEvent size={14} stroke={1.5} />
                   </ThemeIcon>
-                  <Text size="xs" c="dimmed" tt="uppercase" fw={600} style={{ letterSpacing: '0.05em' }}>
+                  <Text
+                    size="xs"
+                    c="dimmed"
+                    tt="uppercase"
+                    fw={600}
+                    style={{ letterSpacing: '0.05em' }}
+                  >
                     Løndag
                   </Text>
                 </Group>
@@ -280,10 +349,13 @@ export default function IncomeOverviewPage() {
                     const count = salaryPayDays.dayCounts.get(day) ?? 0;
                     const isModal = count === salaryPayDays.maxCount && count > 0;
                     const isActive = count > 0;
-                    const shade = isModal ? 8
-                      : count >= salaryPayDays.maxCount * 0.66 ? 5
-                      : count >= salaryPayDays.maxCount * 0.33 ? 3
-                      : 1;
+                    const shade = isModal
+                      ? 8
+                      : count >= salaryPayDays.maxCount * 0.66
+                        ? 5
+                        : count >= salaryPayDays.maxCount * 0.33
+                          ? 3
+                          : 1;
                     const textColor = shade >= 5 ? 'white' : isActive ? 'teal.9' : 'dimmed';
                     return (
                       <Tooltip
@@ -315,12 +387,17 @@ export default function IncomeOverviewPage() {
                   })}
                 </div>
                 {(() => {
-                  const topDay = [...salaryPayDays.dayCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
+                  const topDay = [...salaryPayDays.dayCounts.entries()].sort(
+                    (a, b) => b[1] - a[1]
+                  )[0]?.[0];
                   if (!topDay) return null;
                   const label = topDay >= 28 ? 'sidst i måneden' : `den ${topDay}. i måneden`;
                   return (
                     <Text size="xs" c="dimmed" mt="sm">
-                      Typisk løndag: <Text span fw={600} c="teal.7">{label}</Text>
+                      Typisk løndag:{' '}
+                      <Text span fw={600} c="teal.7">
+                        {label}
+                      </Text>
                     </Text>
                   );
                 })()}

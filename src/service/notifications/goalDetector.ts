@@ -35,7 +35,10 @@ export function detectGoalNotifications(
   const slots: { category_key: string; segment_key: string }[] = [];
   for (const g of goals) {
     const k = slotKey(g.category_key, g.segment_key);
-    if (!seen.has(k)) { seen.add(k); slots.push({ category_key: g.category_key, segment_key: g.segment_key }); }
+    if (!seen.has(k)) {
+      seen.add(k);
+      slots.push({ category_key: g.category_key, segment_key: g.segment_key });
+    }
   }
 
   // Build spending per slot for the given month

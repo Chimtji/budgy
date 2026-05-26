@@ -1,16 +1,39 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Badge, Box, Button, Divider, Group, Loader, Modal, NumberInput, Select, Stack, Text, TextInput, Tooltip } from '@mantine/core';
+import {
+  Badge,
+  Box,
+  Button,
+  Divider,
+  Group,
+  Loader,
+  Modal,
+  NumberInput,
+  Select,
+  Stack,
+  Text,
+  TextInput,
+  Tooltip,
+} from '@mantine/core';
 import type { TCategory } from '@/service/database/categories/getAll';
-import { getAllTransactions } from '@/service/database/transactions/getAll';
 import type { TGoal } from '@/service/database/goals/getAll';
 import type { TSegment } from '@/service/database/segments/getAll';
+import { getAllTransactions } from '@/service/database/transactions/getAll';
 
 const MONTH_LABELS: Record<string, string> = {
-  '01': 'januar', '02': 'februar', '03': 'marts', '04': 'april',
-  '05': 'maj', '06': 'juni', '07': 'juli', '08': 'august',
-  '09': 'september', '10': 'oktober', '11': 'november', '12': 'december',
+  '01': 'januar',
+  '02': 'februar',
+  '03': 'marts',
+  '04': 'april',
+  '05': 'maj',
+  '06': 'juni',
+  '07': 'juli',
+  '08': 'august',
+  '09': 'september',
+  '10': 'oktober',
+  '11': 'november',
+  '12': 'december',
 };
 
 function buildMonthOptions(count = 24) {
@@ -46,7 +69,13 @@ type TGoalModalProps = {
   /** All historical goal entries for the slot being edited */
   history?: TGoal[];
   currentMonth: string;
-  onSave: (values: { name: string; category_key: string; segment_key: string; amount_limit: number; effective_from: string }) => void;
+  onSave: (values: {
+    name: string;
+    category_key: string;
+    segment_key: string;
+    amount_limit: number;
+    effective_from: string;
+  }) => void;
 };
 
 export default function GoalModal({
@@ -81,10 +110,16 @@ export default function GoalModal({
 
   // Fetch average spending whenever category or segment changes, or modal reopens
   useEffect(() => {
-    if (!opened || !categoryKey) { setMonthlyAvgs([]); return; }
+    if (!opened || !categoryKey) {
+      setMonthlyAvgs([]);
+      return;
+    }
     setAvgLoading(true);
     getAllTransactions({}).then((result) => {
-      if (!result.success) { setAvgLoading(false); return; }
+      if (!result.success) {
+        setAvgLoading(false);
+        return;
+      }
       const counts: Record<string, number> = {};
       for (const tx of result.data) {
         if (tx.is_archived || tx.amount >= 0) continue;
@@ -111,11 +146,25 @@ export default function GoalModal({
   }, [monthlyAvgs]);
 
   const formatDKK = (n: number) =>
-    new Intl.NumberFormat('da-DK', { style: 'currency', currency: 'DKK', maximumFractionDigits: 0 }).format(n);
+    new Intl.NumberFormat('da-DK', {
+      style: 'currency',
+      currency: 'DKK',
+      maximumFractionDigits: 0,
+    }).format(n);
 
   const MONTH_SHORT: Record<string, string> = {
-    '01': 'jan', '02': 'feb', '03': 'mar', '04': 'apr', '05': 'maj', '06': 'jun',
-    '07': 'jul', '08': 'aug', '09': 'sep', '10': 'okt', '11': 'nov', '12': 'dec',
+    '01': 'jan',
+    '02': 'feb',
+    '03': 'mar',
+    '04': 'apr',
+    '05': 'maj',
+    '06': 'jun',
+    '07': 'jul',
+    '08': 'aug',
+    '09': 'sep',
+    '10': 'okt',
+    '11': 'nov',
+    '12': 'dec',
   };
 
   const categoryOptions = categories.map((c) => ({ value: c.key, label: c.label }));
@@ -146,10 +195,16 @@ export default function GoalModal({
     onClose();
   };
 
-  const historySorted = [...history].sort((a, b) => b.effective_from.localeCompare(a.effective_from));
+  const historySorted = [...history].sort((a, b) =>
+    b.effective_from.localeCompare(a.effective_from)
+  );
 
   const formatDKKh = (n: number) =>
-    new Intl.NumberFormat('da-DK', { style: 'currency', currency: 'DKK', maximumFractionDigits: 0 }).format(n);
+    new Intl.NumberFormat('da-DK', {
+      style: 'currency',
+      currency: 'DKK',
+      maximumFractionDigits: 0,
+    }).format(n);
 
   return (
     <Modal
@@ -207,16 +262,22 @@ export default function GoalModal({
             }}
           >
             <Group justify="space-between" mb="sm">
-              <Text size="xs" c="dimmed">Gns. forbrug · seneste {monthlyAvgs.length || '…'} md.</Text>
+              <Text size="xs" c="dimmed">
+                Gns. forbrug · seneste {monthlyAvgs.length || '…'} md.
+              </Text>
               {avgLoading ? (
                 <Loader size="xs" />
               ) : avg !== null ? (
-                <Text size="sm" fw={700}>{formatDKK(avg)}</Text>
+                <Text size="sm" fw={700}>
+                  {formatDKK(avg)}
+                </Text>
               ) : null}
             </Group>
 
             {avgLoading ? null : monthlyAvgs.length === 0 ? (
-              <Text size="xs" c="dimmed">Ingen historik for dette valg</Text>
+              <Text size="xs" c="dimmed">
+                Ingen historik for dette valg
+              </Text>
             ) : (
               (() => {
                 const ordered = [...monthlyAvgs].reverse();
@@ -267,7 +328,9 @@ export default function GoalModal({
             <Stack gap={6}>
               {historySorted.map((entry) => (
                 <Group key={entry.id} justify="space-between">
-                  <Text size="xs" c="dimmed">{formatHistoryDate(entry.effective_from)}</Text>
+                  <Text size="xs" c="dimmed">
+                    {formatHistoryDate(entry.effective_from)}
+                  </Text>
                   <Badge variant="light" color="gray" radius="sm" size="sm">
                     {formatDKKh(entry.amount_limit)}
                   </Badge>
@@ -278,7 +341,9 @@ export default function GoalModal({
         )}
 
         <Group justify="flex-end" pt="xs">
-          <Button variant="default" onClick={onClose}>Annuller</Button>
+          <Button variant="default" onClick={onClose}>
+            Annuller
+          </Button>
           <Button onClick={handleSave} disabled={!categoryKey || !name.trim() || !amountLimit}>
             Gem
           </Button>

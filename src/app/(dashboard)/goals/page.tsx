@@ -21,9 +21,18 @@ import GoalCard from './_components/GoalCard';
 import GoalModal from './_components/GoalModal';
 
 const MONTH_LABELS: Record<string, string> = {
-  '01': 'Januar', '02': 'Februar', '03': 'Marts', '04': 'April',
-  '05': 'Maj', '06': 'Juni', '07': 'Juli', '08': 'August',
-  '09': 'September', '10': 'Oktober', '11': 'November', '12': 'December',
+  '01': 'Januar',
+  '02': 'Februar',
+  '03': 'Marts',
+  '04': 'April',
+  '05': 'Maj',
+  '06': 'Juni',
+  '07': 'Juli',
+  '08': 'August',
+  '09': 'September',
+  '10': 'Oktober',
+  '11': 'November',
+  '12': 'December',
 };
 
 function buildMonthOptions() {
@@ -51,7 +60,12 @@ export default function GoalsPage() {
     useShallow((s) => ({ categories: s.categories, segments: s.segments }))
   );
   const { goals, init, upsertGoal, removeGoal } = useGoalsStore(
-    useShallow((s) => ({ goals: s.goals, init: s.init, upsertGoal: s.upsertGoal, removeGoal: s.removeGoal }))
+    useShallow((s) => ({
+      goals: s.goals,
+      init: s.init,
+      upsertGoal: s.upsertGoal,
+      removeGoal: s.removeGoal,
+    }))
   );
 
   const [month, setMonth] = useState<string>(nowYM());
@@ -64,14 +78,19 @@ export default function GoalsPage() {
 
   const monthOptions = useMemo(() => buildMonthOptions(), []);
 
-  useEffect(() => { init(); }, [init]);
+  useEffect(() => {
+    init();
+  }, [init]);
 
   useEffect(() => {
     if (!month) return;
     setTxLoading(true);
     const year = Number(month.split('-')[0]);
     getAllTransactions({ year }).then((result) => {
-      if (!result.success) { setTxLoading(false); return; }
+      if (!result.success) {
+        setTxLoading(false);
+        return;
+      }
       // Build two spending buckets per category:
       // - one per segment_key (for goals scoped to a segment)
       // - one with '' (total, for goals scoped to all segments)
@@ -161,24 +180,39 @@ export default function GoalsPage() {
     <Stack gap="xl">
       <Group justify="space-between" align="flex-end">
         <Stack gap={4}>
-          <Title order={2} fw={700} style={{ letterSpacing: '-0.5px' }}>Budgetmål</Title>
-          <Text size="sm" c="dimmed">Sæt forbrugsgrænser per kategori og segment, og følg dit forbrug måned for måned</Text>
+          <Title order={2} fw={700} style={{ letterSpacing: '-0.5px' }}>
+            Budgetmål
+          </Title>
+          <Text size="sm" c="dimmed">
+            Sæt forbrugsgrænser per kategori og segment, og følg dit forbrug måned for måned
+          </Text>
         </Stack>
         <Group gap="sm">
           <Select data={monthOptions} value={month} onChange={(v) => v && setMonth(v)} w={170} />
-          <Button leftSection={<IconPlus size={16} />} variant="light" onClick={() => { setEditGoalId(null); setModalOpen(true); }}>
+          <Button
+            leftSection={<IconPlus size={16} />}
+            variant="light"
+            onClick={() => {
+              setEditGoalId(null);
+              setModalOpen(true);
+            }}
+          >
             Tilføj mål
           </Button>
         </Group>
       </Group>
 
       {txLoading ? (
-        <Center h={200}><Loader size="sm" /></Center>
+        <Center h={200}>
+          <Loader size="sm" />
+        </Center>
       ) : activeGoals.length === 0 ? (
         <Center h={200}>
           <Stack align="center" gap="xs">
             <IconTarget size={40} stroke={1} color="var(--mantine-color-gray-5)" />
-            <Text c="dimmed" size="sm">Ingen budgetmål endnu. Tilføj dit første mål.</Text>
+            <Text c="dimmed" size="sm">
+              Ingen budgetmål endnu. Tilføj dit første mål.
+            </Text>
           </Stack>
         </Center>
       ) : (
@@ -187,14 +221,17 @@ export default function GoalsPage() {
             const cat = categories.find((c) => c.key === slot.category_key);
             if (!cat) return null;
             const seg = slot.segment_key
-              ? segments.find((s) => s.key === slot.segment_key && s.category_key === slot.category_key)
+              ? segments.find(
+                  (s) => s.key === slot.segment_key && s.category_key === slot.category_key
+                )
               : null;
             const k = slotKey(slot.category_key, slot.segment_key);
             const slotHistory = historyBySlot[k] ?? [];
             // Use the most recent entry id for edit targeting
-            const repId = slotHistory.length > 0
-              ? slotHistory.reduce((a, b) => a.effective_from > b.effective_from ? a : b).id
-              : null;
+            const repId =
+              slotHistory.length > 0
+                ? slotHistory.reduce((a, b) => (a.effective_from > b.effective_from ? a : b)).id
+                : null;
 
             return (
               <GoalCard
@@ -207,7 +244,10 @@ export default function GoalsPage() {
                 amountLimit={goal?.amount_limit ?? null}
                 effectiveFrom={goal?.effective_from ?? null}
                 spent={spendingMap[k] ?? 0}
-                onEdit={() => { if (repId) setEditGoalId(repId); setModalOpen(true); }}
+                onEdit={() => {
+                  if (repId) setEditGoalId(repId);
+                  setModalOpen(true);
+                }}
                 onDelete={() => slotHistory.forEach((e) => removeGoal(e.id))}
               />
             );

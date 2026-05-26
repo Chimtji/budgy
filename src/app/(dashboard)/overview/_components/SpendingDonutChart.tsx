@@ -1,9 +1,9 @@
 'use client';
 
 import { useMemo } from 'react';
+import { IconChartDonut, IconLayoutList, IconStack2 } from '@tabler/icons-react';
 import { DonutChart } from '@mantine/charts';
 import { Badge, Card, Group, Stack, Text, ThemeIcon } from '@mantine/core';
-import { IconChartDonut, IconLayoutList, IconStack2 } from '@tabler/icons-react';
 import type { TTransaction } from '@/service/database/transactions/getAll';
 
 type TCategory = { key: string; label: string; color: string };
@@ -18,7 +18,16 @@ type TProps = {
 };
 
 const FALLBACK_COLORS = [
-  'violet', 'blue', 'teal', 'green', 'yellow', 'orange', 'red', 'pink', 'grape', 'cyan',
+  'violet',
+  'blue',
+  'teal',
+  'green',
+  'yellow',
+  'orange',
+  'red',
+  'pink',
+  'grape',
+  'cyan',
 ];
 
 const formatDKK = (n: number) =>
@@ -92,11 +101,14 @@ const SpendingDonutChart: React.FC<TProps> = ({
     return { data, title: 'Posteringer' };
   }, [expenses, categories, segments, selectedCategory, selectedSegment]);
 
-  const titleIcon = title === 'Kategorier'
-    ? <IconChartDonut size={14} stroke={1.5} />
-    : title === 'Segmenter'
-    ? <IconStack2 size={14} stroke={1.5} />
-    : <IconLayoutList size={14} stroke={1.5} />;
+  const titleIcon =
+    title === 'Kategorier' ? (
+      <IconChartDonut size={14} stroke={1.5} />
+    ) : title === 'Segmenter' ? (
+      <IconStack2 size={14} stroke={1.5} />
+    ) : (
+      <IconLayoutList size={14} stroke={1.5} />
+    );
 
   return (
     <Card withBorder p="md">
@@ -109,7 +121,9 @@ const SpendingDonutChart: React.FC<TProps> = ({
         </Text>
       </Group>
       {data.length === 0 ? (
-        <Text size="sm" c="dimmed" ta="center" py="sm">Ingen data</Text>
+        <Text size="sm" c="dimmed" ta="center" py="sm">
+          Ingen data
+        </Text>
       ) : (
         <Stack gap="md" align="center">
           <DonutChart
@@ -141,8 +155,12 @@ const SpendingDonutChart: React.FC<TProps> = ({
                       {item.name}
                     </Text>
                     <Group gap={4} style={{ flexShrink: 0 }}>
-                      <Text size="xs" c="dimmed">{formatDKK(item.value)}</Text>
-                      <Badge variant="light" color="gray" radius="sm" size="sm">{pct} %</Badge>
+                      <Text size="xs" c="dimmed">
+                        {formatDKK(item.value)}
+                      </Text>
+                      <Badge variant="light" color="gray" radius="sm" size="sm">
+                        {pct} %
+                      </Badge>
                     </Group>
                   </Group>
                 );

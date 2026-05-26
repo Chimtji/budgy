@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import {
-  IconCalendarEvent,
   IconCalendarStats,
   IconChartArea,
   IconChartPie,
@@ -23,8 +22,6 @@ import {
   Stack,
   Text,
   ThemeIcon,
-  Title,
-  Tooltip,
 } from '@mantine/core';
 import { getAllTransactions, type TTransaction } from '@/service/database/transactions/getAll';
 import { detectSubscriptions } from '@/service/subscriptions/detector';
@@ -65,10 +62,10 @@ const StatCard: React.FC<{
   valueColor?: string;
   icon?: React.ReactNode;
 }> = ({ label, value, sub, valueColor, icon }) => (
-  <Card withBorder p="md" style={{ height: '100%' }}>
-    <Group gap={8} mb={6}>
+  <Card withBorder p="lg">
+    <Group gap={8} mb={8}>
       {icon && (
-        <ThemeIcon size={22} radius="md" variant="light" color="violet">
+        <ThemeIcon size={28} radius="md" variant="light" color="violet">
           {icon}
         </ThemeIcon>
       )}
@@ -76,11 +73,11 @@ const StatCard: React.FC<{
         {label}
       </Text>
     </Group>
-    <Text fw={800} style={{ fontSize: 22, letterSpacing: '-0.5px', lineHeight: 1 }} c={valueColor}>
+    <Text fw={800} style={{ fontSize: 28, letterSpacing: '-1px', lineHeight: 1 }} c={valueColor}>
       {value}
     </Text>
     {sub && (
-      <Text size="xs" c="dimmed" mt={4}>
+      <Text size="xs" c="dimmed" mt={6}>
         {sub}
       </Text>
     )}
@@ -105,48 +102,33 @@ const TopList: React.FC<{ title: string; items: TTopItem[]; icon?: React.ReactNo
         {title}
       </Text>
     </Group>
-    <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 4px' }}>
-      <tbody>
-        {items.map((item, i) => (
-          <tr key={i} style={{ background: 'var(--mantine-color-default-hover)' }}>
-            <td style={{ borderRadius: '6px 0 0 6px', padding: '6px 8px', width: 24 }}>
-              <Text size="xs" c="dimmed">
-                {i + 1}
-              </Text>
-            </td>
-            <td style={{ padding: '6px 8px' }}>
-              <Text size="sm" fw={500} truncate>
-                {item.label}
-              </Text>
-            </td>
-            <td
-              style={{
-                borderRadius: '0 6px 6px 0',
-                padding: '6px 8px',
-                textAlign: 'right',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              <Text size="sm" fw={600}>
-                {item.primary}
-              </Text>
-              <Text size="xs" c="dimmed">
-                {item.secondary}
-              </Text>
-            </td>
-          </tr>
-        ))}
-        {items.length === 0 && (
-          <tr>
-            <td colSpan={3} style={{ textAlign: 'center', padding: '8px' }}>
-              <Text size="sm" c="dimmed">
-                Ingen data
-              </Text>
-            </td>
-          </tr>
-        )}
-      </tbody>
-    </table>
+    <Stack gap={6}>
+      {items.map((item, i) => (
+        <Group key={i} justify="space-between" wrap="nowrap">
+          <Group gap="xs" wrap="nowrap" style={{ minWidth: 0 }}>
+            <Text size="xs" c="dimmed" style={{ flexShrink: 0, width: 16 }}>
+              {i + 1}
+            </Text>
+            <Text size="sm" fw={500} truncate>
+              {item.label}
+            </Text>
+          </Group>
+          <Stack gap={0} align="flex-end" style={{ flexShrink: 0 }}>
+            <Text size="sm" fw={600}>
+              {item.primary}
+            </Text>
+            <Text size="xs" c="dimmed">
+              {item.secondary}
+            </Text>
+          </Stack>
+        </Group>
+      ))}
+      {items.length === 0 && (
+        <Text size="sm" c="dimmed" ta="center" py="sm">
+          Ingen data
+        </Text>
+      )}
+    </Stack>
   </Card>
 );
 
@@ -281,16 +263,6 @@ export default function SpendingOverviewPage() {
       }));
   }, [expenses]);
 
-  const spendingDayStats = useMemo(() => {
-    const dayCounts = new Map<number, number>();
-    for (const t of expenses) {
-      const day = parseInt(t.date.slice(8, 10), 10);
-      dayCounts.set(day, (dayCounts.get(day) ?? 0) + 1);
-    }
-    const maxCount = Math.max(0, ...dayCounts.values());
-    return { dayCounts, maxCount };
-  }, [expenses]);
-
   if (loading || categories.length === 0) {
     return (
       <Stack align="center" justify="center" style={{ flex: 1, height: '100%' }}>
@@ -301,49 +273,44 @@ export default function SpendingOverviewPage() {
 
   return (
     <Stack gap="md">
-      <Group justify="space-between" align="center">
-        <Title order={2} fw={700} style={{ letterSpacing: '-0.5px' }}>
-          Udgifter
-        </Title>
-        <Group gap="sm">
-          <Select
-            size="xs"
-            data={categoryData}
-            value={selectedCategory}
-            onChange={(v) => {
-              setSelectedCategory(v ?? 'all');
-              setSelectedSegment('all');
-            }}
-            style={{ width: 180 }}
-            styles={{ input: { fontWeight: 500 } }}
-          />
-          <Select
-            size="xs"
-            data={segmentData}
-            value={selectedSegment}
-            onChange={(v) => setSelectedSegment(v ?? 'all')}
-            disabled={selectedCategory === 'all'}
-            style={{ width: 180 }}
-            styles={{ input: { fontWeight: 500 } }}
-          />
-          <Select
-            size="xs"
-            data={[
-              { value: '3m', label: 'Seneste 3 mdr.' },
-              { value: '6m', label: 'Seneste 6 mdr.' },
-              { value: '12m', label: 'Seneste 12 mdr.' },
-              { value: 'ytd', label: 'Dette år' },
-              { value: 'all', label: 'Alt tid' },
-            ]}
-            value={interval}
-            onChange={(v) => setIntervalValue(v ?? '12m')}
-            style={{ width: 180 }}
-            styles={{ input: { fontWeight: 500 } }}
-          />
-        </Group>
+      <Group gap="sm">
+        <Select
+          size="xs"
+          data={categoryData}
+          value={selectedCategory}
+          onChange={(v) => {
+            setSelectedCategory(v ?? 'all');
+            setSelectedSegment('all');
+          }}
+          style={{ width: 180 }}
+          styles={{ input: { fontWeight: 500 } }}
+        />
+        <Select
+          size="xs"
+          data={segmentData}
+          value={selectedSegment}
+          onChange={(v) => setSelectedSegment(v ?? 'all')}
+          disabled={selectedCategory === 'all'}
+          style={{ width: 180 }}
+          styles={{ input: { fontWeight: 500 } }}
+        />
+        <Select
+          size="xs"
+          data={[
+            { value: '3m', label: 'Seneste 3 mdr.' },
+            { value: '6m', label: 'Seneste 6 mdr.' },
+            { value: '12m', label: 'Seneste 12 mdr.' },
+            { value: 'ytd', label: 'Dette år' },
+            { value: 'all', label: 'Alt tid' },
+          ]}
+          value={interval}
+          onChange={(v) => setIntervalValue(v ?? '12m')}
+          style={{ width: 180 }}
+          styles={{ input: { fontWeight: 500 } }}
+        />
       </Group>
 
-      <SimpleGrid cols={4} spacing="md" style={{ alignItems: 'stretch' }}>
+      <SimpleGrid cols={4} spacing="md">
         <StatCard
           label="Samlet udgift"
           value={formatDKK(total)}
@@ -381,9 +348,9 @@ export default function SpendingOverviewPage() {
 
       <Grid gutter="md" align="stretch">
         <Grid.Col span={8}>
-          <Stack gap="md" style={{ height: '100%' }}>
+          <Stack gap="md">
             <MonthlySpendingChart expenses={expenses} />
-            <SimpleGrid cols={2} spacing="md" style={{ flex: 1, alignItems: 'stretch' }}>
+            <SimpleGrid cols={2} spacing="md">
               <TopList
                 title="Top 5 — flest posteringer"
                 items={topByCount}
@@ -398,90 +365,13 @@ export default function SpendingOverviewPage() {
           </Stack>
         </Grid.Col>
         <Grid.Col span={4}>
-          <Stack gap="md">
-            <SpendingDonutChart
-              expenses={expenses}
-              categories={categories}
-              segments={segments}
-              selectedCategory={selectedCategory}
-              selectedSegment={selectedSegment}
-            />
-            <Card withBorder p="md">
-              <Group gap={8} mb="xs">
-                <ThemeIcon size={22} radius="md" variant="light" color="violet">
-                  <IconCalendarEvent size={14} stroke={1.5} />
-                </ThemeIcon>
-                <Text
-                  size="xs"
-                  c="dimmed"
-                  tt="uppercase"
-                  fw={600}
-                  style={{ letterSpacing: '0.05em' }}
-                >
-                  Posteringer per dag
-                </Text>
-              </Group>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
-                {Array.from({ length: 31 }, (_, i) => {
-                  const day = i + 1;
-                  const count = spendingDayStats.dayCounts.get(day) ?? 0;
-                  const isModal = count === spendingDayStats.maxCount && count > 0;
-                  const isActive = count > 0;
-                  const shade = isModal
-                    ? 8
-                    : count >= spendingDayStats.maxCount * 0.66
-                      ? 5
-                      : count >= spendingDayStats.maxCount * 0.33
-                        ? 3
-                        : 1;
-                  const textColor = !isActive ? 'dimmed' : shade >= 5 ? 'white' : 'violet.9';
-                  return (
-                    <Tooltip
-                      key={day}
-                      label={isActive ? `${count} postering(er)` : `Ingen posteringer`}
-                      withArrow
-                      position="top"
-                    >
-                      <div
-                        style={{
-                          width: 22,
-                          height: 22,
-                          borderRadius: 4,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          background: isActive
-                            ? `var(--mantine-color-violet-${shade})`
-                            : 'var(--mantine-color-default-hover)',
-                          cursor: isActive ? 'default' : undefined,
-                        }}
-                      >
-                        <Text size="xs" fw={shade >= 5 ? 700 : 400} c={textColor}>
-                          {day}
-                        </Text>
-                      </div>
-                    </Tooltip>
-                  );
-                })}
-              </div>
-              {spendingDayStats.maxCount > 0 &&
-                (() => {
-                  const topDay = [...spendingDayStats.dayCounts.entries()].sort(
-                    (a, b) => b[1] - a[1]
-                  )[0]?.[0];
-                  if (!topDay) return null;
-                  const label = topDay >= 28 ? 'sidst i måneden' : `den ${topDay}. i måneden`;
-                  return (
-                    <Text size="xs" c="dimmed" mt="sm">
-                      Mest aktiv:{' '}
-                      <Text span fw={600} c="violet.7">
-                        {label}
-                      </Text>
-                    </Text>
-                  );
-                })()}
-            </Card>
-          </Stack>
+          <SpendingDonutChart
+            expenses={expenses}
+            categories={categories}
+            segments={segments}
+            selectedCategory={selectedCategory}
+            selectedSegment={selectedSegment}
+          />
         </Grid.Col>
       </Grid>
     </Stack>

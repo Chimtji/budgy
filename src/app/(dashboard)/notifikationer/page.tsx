@@ -14,10 +14,10 @@ import { useShallow } from 'zustand/shallow';
 import { Badge, Box, Button, Group, Paper, Stack, Text, Title } from '@mantine/core';
 import { detectNotifications } from '@/service/notifications/detector';
 import { detectGoalNotifications } from '@/service/notifications/goalDetector';
+import { useGoalsStore } from '@/stores/goals/goalsStore';
 import { useNotificationsStore } from '@/stores/notifications/notificationsStore';
 import { useSubscriptionsStore } from '@/stores/subscriptions/subscriptionsStore';
 import { useTransactionsStore } from '@/stores/transactions/transactionsStore';
-import { useGoalsStore } from '@/stores/goals/goalsStore';
 import { formatDate } from '@/utilities';
 
 const formatDKK = (n: number) =>
@@ -99,10 +99,9 @@ export default function NotifikationerPage() {
             color="gray"
             size="xs"
             leftSection={<IconBellOff size={14} stroke={1.5} />}
-            onClick={() => dismissAll([
-              ...active.map((n) => n.id),
-              ...activeGoalNotifications.map((n) => n.id),
-            ])}
+            onClick={() =>
+              dismissAll([...active.map((n) => n.id), ...activeGoalNotifications.map((n) => n.id)])
+            }
           >
             Afvis alle
           </Button>
@@ -122,7 +121,14 @@ export default function NotifikationerPage() {
       <Stack gap="xs">
         {activeGoalNotifications.map((n) => {
           const pct = Math.round((n.spent / n.amountLimit) * 100);
-          const color = n.threshold === 100 ? 'red' : n.threshold >= 90 ? 'orange' : n.threshold >= 70 ? 'yellow' : 'blue';
+          const color =
+            n.threshold === 100
+              ? 'red'
+              : n.threshold >= 90
+                ? 'orange'
+                : n.threshold >= 70
+                  ? 'yellow'
+                  : 'blue';
           return (
             <Paper key={n.id} px="md" py="sm">
               <Group justify="space-between" align="flex-start" wrap="nowrap" gap="md">
@@ -134,7 +140,9 @@ export default function NotifikationerPage() {
                 />
                 <Stack gap={4} style={{ flex: 1, minWidth: 0 }}>
                   <Group gap="xs" align="center" wrap="nowrap">
-                    <Text size="sm" fw={600}>{n.goalName}</Text>
+                    <Text size="sm" fw={600}>
+                      {n.goalName}
+                    </Text>
                     <Badge variant="light" color={color} radius="sm" size="xs">
                       {pct}% af loft
                     </Badge>

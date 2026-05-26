@@ -12,9 +12,18 @@ const formatDKK = (n: number) =>
   }).format(n);
 
 const MONTH_LABELS: Record<string, string> = {
-  '01': 'jan.', '02': 'feb.', '03': 'mar.', '04': 'apr.',
-  '05': 'maj', '06': 'jun.', '07': 'jul.', '08': 'aug.',
-  '09': 'sep.', '10': 'okt.', '11': 'nov.', '12': 'dec.',
+  '01': 'jan.',
+  '02': 'feb.',
+  '03': 'mar.',
+  '04': 'apr.',
+  '05': 'maj',
+  '06': 'jun.',
+  '07': 'jul.',
+  '08': 'aug.',
+  '09': 'sep.',
+  '10': 'okt.',
+  '11': 'nov.',
+  '12': 'dec.',
 };
 
 function formatShortDate(dateStr: string) {
@@ -60,7 +69,9 @@ export default function GoalCard({
   return (
     <Paper withBorder p="md" radius="md">
       <Group justify="space-between" mb={4}>
-        <Text fw={700} size="sm">{name}</Text>
+        <Text fw={700} size="sm">
+          {name}
+        </Text>
         <Group gap={4}>
           <ActionIcon variant="subtle" color="gray" size="sm" onClick={onEdit}>
             <IconPencil size={14} stroke={1.5} />
@@ -76,14 +87,16 @@ export default function GoalCard({
           <IconComponent size={14} stroke={1.5} />
         </ThemeIcon>
         <Text size="xs" c="dimmed">
-          {categoryLabel}{segmentLabel ? ` · ${segmentLabel}` : ' · Alle segmenter'}
+          {categoryLabel}
+          {segmentLabel ? ` · ${segmentLabel}` : ' · Alle segmenter'}
         </Text>
       </Group>
 
       {hasLimit && effectiveFrom ? (
         <>
           <Text size="xs" c="dimmed" mb="xs">
-            Loft: {formatDKK(amountLimit)} / md. &middot; Gælder fra {formatShortDate(effectiveFrom)}
+            Loft: {formatDKK(amountLimit)} / md. &middot; Gælder fra{' '}
+            {formatShortDate(effectiveFrom)}
           </Text>
           <Progress value={pct} color={progressColor} size="sm" radius="xl" mb="xs" />
           <Group justify="space-between">
@@ -91,7 +104,9 @@ export default function GoalCard({
               <Text size="sm" fw={500} c={over ? 'red' : 'dark'}>
                 {formatDKK(spent)}
               </Text>
-              <Text size="xs" c="dimmed">brugt</Text>
+              <Text size="xs" c="dimmed">
+                brugt
+              </Text>
             </Box>
             <Badge variant="light" color={progressColor} radius="sm" size="sm">
               {over
@@ -103,10 +118,16 @@ export default function GoalCard({
       ) : (
         <Group justify="space-between" align="center">
           <Box>
-            <Text size="sm" fw={500}>{formatDKK(spent)}</Text>
-            <Text size="xs" c="dimmed">brugt</Text>
+            <Text size="sm" fw={500}>
+              {formatDKK(spent)}
+            </Text>
+            <Text size="xs" c="dimmed">
+              brugt
+            </Text>
           </Box>
-          <Text size="xs" c="dimmed">Intet loft sat</Text>
+          <Text size="xs" c="dimmed">
+            Intet loft sat
+          </Text>
         </Group>
       )}
     </Paper>
