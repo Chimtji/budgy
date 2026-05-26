@@ -9,10 +9,14 @@ export default withBundleAnalyzer({
   eslint: {
     ignoreDuringBuilds: true,
   },
+  serverExternalPackages: ['better-sqlite3'],
   experimental: {
     optimizePackageImports: ['@mantine/core', '@mantine/hooks'],
   },
   images: {
-    remotePatterns: [{hostname: '*.unsplash.com'}],
+    remotePatterns: [{ hostname: '*.unsplash.com' }],
+  },
+  devIndicators: {
+    position: 'bottom-right',
   },
 });

@@ -1,47 +1,26 @@
 'use client';
 
-import { useEffect, useLayoutEffect, type FC, type ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
-import { useShallow } from 'zustand/shallow';
-import { useAppStore } from '@/stores/app/appStore';
-import { useBillsStore } from '@/stores/bills/billsStore';
+import { useEffect } from 'react';
+import { useCategoriesStore } from '@/stores/categories/categoriesStore';
 import { useCompaniesStore } from '@/stores/companies/companiesStore';
+import { useGoalsStore } from '@/stores/goals/goalsStore';
+import { useGrafanaStore } from '@/stores/grafana/grafanaStore';
 import { useTransactionsStore } from '@/stores/transactions/transactionsStore';
-import { useUserStore } from '@/stores/user/userStore';
 
-type TProps = { children: ReactNode };
+type TProps = {
+  children: React.ReactNode;
+};
 
-const State: FC<TProps> = ({ children }) => {
-  const { login, loggedIn } = useUserStore(
-    useShallow((state) => ({
-      login: state.login,
-      loggedIn: state.loggedIn,
-    }))
-  );
-  const initTransactions = useTransactionsStore((state) => state.initTransactions);
-  const initCompanies = useCompaniesStore((state) => state.initCompanies);
-  const router = useRouter();
-
-  const setYear = useAppStore((state) => state.setYear);
-
+const State = ({ children }: TProps) => {
   useEffect(() => {
-    setYear(new Date().getFullYear());
+    useCategoriesStore.getState().initCategories();
+    useCompaniesStore.getState().init();
+    useGoalsStore.getState().init();
+    useTransactionsStore.getState().init();
+    useGrafanaStore.getState().init();
   }, []);
 
-  // useLayoutEffect(() => {
-  //   login();
-  //   initTransactions();
-  //   initCompanies();
-  //   initBills();
-  // }, []);
-
-  // useEffect(() => {
-  //   if (!loggedIn) {
-  //     router.push('/login');
-  //   }
-  // }, [loggedIn]);
-
-  return children;
+  return <>{children}</>;
 };
 
 export default State;

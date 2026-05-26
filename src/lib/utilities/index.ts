@@ -33,6 +33,12 @@ export const deepEqual = (a: any, b: any): boolean => {
   return false;
 };
 
+/** Formats a YYYY-MM-DD (or ISO) date string as DD-MM-YYYY */
+export const formatDate = (date: string): string => {
+  const [y, m, d] = date.slice(0, 10).split('-');
+  return `${d}-${m}-${y}`;
+};
+
 export const makeSafeObject = (unsafeObject: any): any => {
   return JSON.parse(JSON.stringify(unsafeObject));
 };

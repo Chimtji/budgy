@@ -1,54 +1,90 @@
-'use client';
-
 import { create } from 'zustand';
+import { persist, subscribeWithSelector } from 'zustand/middleware';
+import { immer } from 'zustand/middleware/immer';
 import { showErrorNotification } from '@/notifications/feedback';
-import { addCompany } from '@/service/database/companies/addCompany';
-import { init } from './actions/init';
+import { createCompany } from '@/service/database/companies/create';
+import { deleteCompany } from '@/service/database/companies/delete';
+import { getAllCompanies, type TCompany } from '@/service/database/companies/getAll';
+import { updateCompany } from '@/service/database/companies/update';
 
-export type TCompanyDraft = {
-  name: string;
-  domain: string;
-  description: string;
+type TState = {
+  companies: TCompany[];
 };
 
-export type TCompany = {
-  name: string;
-  domain: string;
-  description: string;
-  id: number;
+type TActions = {
+  init: () => Promise<void>;
+  addCompany: (
+    name: string,
+    domain?: string | null,
+    tags?: string[],
+    category_key?: string | null,
+    segment_key?: string | null
+  ) => Promise<TCompany | null>;
+  updateCompany: (
+    id: string,
+    name: string,
+    domain?: string | null,
+    tags?: string[],
+    category_key?: string | null,
+    segment_key?: string | null
+  ) => Promise<void>;
+  removeCompany: (id: string) => Promise<void>;
 };
 
-export type TCompanies = {
-  [id: string]: TCompany;
-};
+export const useCompaniesStore = create<TState & TActions>()(
+  persist(
+    subscribeWithSelector(
+      immer((set) => ({
+        companies: [],
 
-export type TCompaniesState = {
-  companies: TCompanies;
-};
+        init: async () => {
+          const result = await getAllCompanies();
+          if (!result.success) {
+            showErrorNotification({ title: 'Fejl', message: 'Kunne ikke hente virksomheder' });
+            return;
+          }
+          set((state) => {
+            state.companies = result.data;
+          });
+        },
 
-export type TCompaniesStateActions = {
-  initCompanies: () => void;
-  addCompany: (company: TCompany) => void;
-};
+        addCompany: async (name, domain, tags, category_key, segment_key) => {
+          const result = await createCompany({ name, domain, tags, category_key, segment_key });
+          if (!result.success) {
+            showErrorNotification({ title: 'Fejl', message: 'Kunne ikke oprette virksomhed' });
+            return null;
+          }
+          set((state) => {
+            state.companies.push(result.data);
+            state.companies.sort((a, b) => a.name.localeCompare(b.name));
+          });
+          return result.data;
+        },
 
-export type TCompaniesStore = TCompaniesState & TCompaniesStateActions;
+        updateCompany: async (id, name, domain, tags, category_key, segment_key) => {
+          const result = await updateCompany({ id, name, domain, tags, category_key, segment_key });
+          if (!result.success) {
+            showErrorNotification({ title: 'Fejl', message: 'Kunne ikke opdatere virksomhed' });
+            return;
+          }
+          set((state) => {
+            const idx = state.companies.findIndex((c) => c.id === id);
+            if (idx !== -1) state.companies[idx] = result.data;
+          });
+        },
 
-export const useCompaniesStore = create<TCompaniesStore>()((set) => ({
-  companies: {},
-  addCompany: (company) =>
-    addCompany(company)
-      .then(() => {
-        console.info('✅ Successfully Added Company');
-      })
-      .catch((error) => {
-        showErrorNotification({ title: 'Add Error', message: JSON.stringify(error) });
-      }),
-  initCompanies: () =>
-    init(set)
-      .then(() => {
-        console.info('✅ Successfully Initiated Companies');
-      })
-      .catch((error) => {
-        showErrorNotification({ title: 'Init Error', message: JSON.stringify(error) });
-      }),
-}));
+        removeCompany: async (id) => {
+          const result = await deleteCompany(id);
+          if (!result.success) {
+            showErrorNotification({ title: 'Fejl', message: 'Kunne ikke slette virksomhed' });
+            return;
+          }
+          set((state) => {
+            state.companies = state.companies.filter((c) => c.id !== id);
+          });
+        },
+      }))
+    ),
+    { name: 'companies-store' }
+  )
+);

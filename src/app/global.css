@@ -1,9 +1,9 @@
-@import '@neondatabase/neon-js/ui/css';
-
-:root[data-mantine-color-scheme='dark'] {
-  font-size: calc(0.75vw + 25%);
+* {
+  box-sizing: border-box;
 }
 
-* {
-  /* transition: all 0.2s ease; */
+body {
+  background-color: #f4f5f7;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
