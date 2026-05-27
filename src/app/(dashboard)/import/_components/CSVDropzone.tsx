@@ -2,12 +2,12 @@
 
 import { IconFileTypeCsv, IconUpload, IconX } from '@tabler/icons-react';
 import { Group, rem, Text } from '@mantine/core';
-import { Dropzone } from '@mantine/dropzone';
+import { Dropzone, type FileWithPath } from '@mantine/dropzone';
 
 type TProps = { onFile: (content: string) => void };
 
 const CSVDropzone: React.FC<TProps> = ({ onFile }) => {
-  const handleDrop = (files: File[]) => {
+  const handleDrop = (files: FileWithPath[]) => {
     const file = files[0];
     if (!file) return;
 

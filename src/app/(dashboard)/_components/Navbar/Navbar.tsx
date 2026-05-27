@@ -14,6 +14,7 @@ import {
 } from '@tabler/icons-react';
 import { Box, Group, Stack, Text, Title, Tooltip } from '@mantine/core';
 import { NotificationBell } from './NotificationBell';
+import { ShareButton } from './ShareButton';
 import classes from './Navbar.module.css';
 
 const navItems = [
@@ -106,6 +107,7 @@ export const Navbar = () => {
             </Text>
           </Link>
         </Tooltip>
+        <ShareButton />
       </div>
     </nav>
   );

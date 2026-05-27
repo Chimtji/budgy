@@ -4,10 +4,12 @@ import { immer } from 'zustand/middleware/immer';
 
 type TState = {
   year: number;
+  isReadOnly: boolean;
 };
 
 type TActions = {
   setYear: (year: number) => void;
+  setReadOnly: (value: boolean) => void;
 };
 
 export const useAppStore = create<TState & TActions>()(
@@ -15,14 +17,21 @@ export const useAppStore = create<TState & TActions>()(
     subscribeWithSelector(
       immer((set) => ({
         year: new Date().getFullYear(),
+        isReadOnly: false,
 
         setYear: (year) => {
           set((state) => {
             state.year = year;
           });
         },
+
+        setReadOnly: (value) => {
+          set((state) => {
+            state.isReadOnly = value;
+          });
+        },
       }))
     ),
-    { name: 'app-store' }
+    { name: 'app-store', partialize: (state) => ({ year: state.year }) }
   )
 );

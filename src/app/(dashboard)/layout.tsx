@@ -10,6 +10,7 @@ const DashboardLayout: React.FC<TProps> = ({ children }) => {
   return (
     <State>
       <Box className={classes.root}>
+        <div className={classes.dragRegion} />
         <Box className={classes.sidebar}>
           <Navbar />
         </Box>

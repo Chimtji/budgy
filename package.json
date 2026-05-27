@@ -1,7 +1,8 @@
 {
-  "name": "mantine-next-template",
+  "name": "budgy",
   "version": "1.0.0",
   "private": true,
+  "main": "electron-dist/main.js",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -19,7 +20,13 @@
     "storybook:build": "storybook build",
     "seed": "tsx scripts/seed.ts",
     "migrate": "tsx scripts/migrate.ts",
-    "export": "tsx scripts/export.ts"
+    "export": "tsx scripts/export.ts",
+    "electron:compile": "tsc -p electron/tsconfig.json",
+    "electron:rebuild": "electron-rebuild -f -w better-sqlite3",
+    "postinstall": "electron-rebuild -f -w better-sqlite3",
+    "electron:dev": "next build && yarn electron:compile && electron .",
+    "electron:pack": "next build && yarn electron:compile && electron-builder --mac",
+    "electron:sync-db": "cp budgy.db ~/Library/Application\\ Support/Budgy/budgy.db && echo 'DB synced to Electron userData'"
   },
   "dependencies": {
     "@mantine/charts": "^8.3.3",
@@ -27,6 +34,7 @@
     "@mantine/dropzone": "^8.3.3",
     "@mantine/hooks": "^8.3.3",
     "@mantine/notifications": "^8.3.3",
+    "@netlify/blobs": "^10.7.8",
     "@next/bundle-analyzer": "^15.5.4",
     "@tabler/icons-react": "^3.35.0",
     "@tanstack/react-query": "^5.90.2",
@@ -41,7 +49,9 @@
   },
   "devDependencies": {
     "@babel/core": "^7.28.4",
+    "@electron/rebuild": "^4.0.4",
     "@ianvs/prettier-plugin-sort-imports": "^4.7.0",
+    "@netlify/plugin-nextjs": "^5.15.11",
     "@next/eslint-plugin-next": "^15.5.4",
     "@storybook/addon-essentials": "^8.6.14",
     "@storybook/addon-styling-webpack": "^2.0.0",
@@ -56,10 +66,13 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^25.2.0",
     "@types/react": "^19.2.0",
+    "@types/wait-on": "^5.3.4",
     "@typescript-eslint/eslint-plugin": "^8.45.0",
     "@typescript-eslint/parser": "^8.45.0",
     "babel-loader": "^10.0.0",
     "dotenv": "^17.3.1",
+    "electron": "33",
+    "electron-builder": "26.8.1",
     "eslint": "^9.36.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-airbnb-typescript": "^18.0.0",
@@ -82,7 +95,8 @@
     "stylelint-config-standard-scss": "^16.0.0",
     "ts-jest": "^29.4.4",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "wait-on": "^9.0.10"
   },
   "packageManager": "yarn@4.4.1"
 }

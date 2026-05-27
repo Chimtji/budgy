@@ -1,0 +1,40 @@
+appId: com.budgy.app
+productName: Budgy
+copyright: Copyright © 2026
+
+mac:
+  target:
+    - target: dmg
+      arch: arm64
+    - target: dmg
+      arch: x64
+  category: public.app-category.finance
+  icon: public/icon.icns
+
+directories:
+  output: dist
+  buildResources: build
+
+asar: false
+
+files:
+  - '**/*'
+  - '!**/*.map'
+  - '!scripts/**'
+  - '!example.csv'
+  - '!budgy.db'
+  - '!*.db'
+  - '!.env.local'
+  - '!storybook-static/**'
+  - '!.storybook/**'
+  - '!src/**'
+  - '!electron/**'
+  - 'electron-dist/**'
+  - '.next/**'
+  - 'public/**'
+  - 'node_modules/**'
+
+extraMetadata:
+  main: electron-dist/main.js
+
+nativeRebuilder: sequential

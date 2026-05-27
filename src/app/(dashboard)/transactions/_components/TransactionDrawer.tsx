@@ -103,10 +103,10 @@ const TransactionDrawer: React.FC<TProps> = ({ transaction: t, categories, segme
         segment_key: pendingSegment ?? '',
         company_name: pendingCompany,
       });
-      showSuccessNotification('Kategori opdateret');
+      showSuccessNotification({ title: 'Gemt', message: 'Kategori opdateret' });
       fetchRules();
     } catch {
-      showErrorNotification('Kunne ikke opdatere kategori');
+      showErrorNotification({ title: 'Fejl', message: 'Kunne ikke opdatere kategori' });
     } finally {
       setIsSaving(false);
     }
@@ -181,7 +181,7 @@ const TransactionDrawer: React.FC<TProps> = ({ transaction: t, categories, segme
               <Group gap="xs" wrap="nowrap">
                 <CompanyLogo
                   domain={companies.find((c) => c.name === pendingCompany)?.domain ?? null}
-                  name={pendingCompany}
+                  name={pendingCompany ?? ''}
                   size={24}
                 />
                 <Select

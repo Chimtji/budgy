@@ -6,9 +6,6 @@ const withBundleAnalyzer = bundleAnalyzer({
 
 export default withBundleAnalyzer({
   reactStrictMode: false,
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   serverExternalPackages: ['better-sqlite3'],
   experimental: {
     optimizePackageImports: ['@mantine/core', '@mantine/hooks'],

@@ -132,3 +132,7 @@ dist
 .DS_Store
 certificates
 budgy.db
+
+# Electron
+electron-dist/
+dist/

@@ -41,4 +41,5 @@ export type TServerResponse<T> =
   | { status: 500; error: any; success: false }
   | { status: 200; data: T; success: true }
   | { status: 401; success: false; error: string }
-  | { status: 400; success: false; error: string };
+  | { status: 400; success: false; error: string }
+  | { status: 404; success: false; error: string };

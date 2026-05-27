@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { useAppStore } from '@/stores/app/appStore';
 import { useCategoriesStore } from '@/stores/categories/categoriesStore';
 import { useCompaniesStore } from '@/stores/companies/companiesStore';
 import { useGoalsStore } from '@/stores/goals/goalsStore';
@@ -13,6 +14,8 @@ type TProps = {
 
 const State = ({ children }: TProps) => {
   useEffect(() => {
+    if (useAppStore.getState().isReadOnly) return;
+
     useCategoriesStore.getState().initCategories();
     useCompaniesStore.getState().init();
     useGoalsStore.getState().init();

@@ -18,3 +18,15 @@
   overflow-y: auto;
   padding: var(--mantine-spacing-xl);
 }
+
+/* Invisible drag strip at top of content area for Electron window dragging */
+.dragRegion {
+  position: fixed;
+  top: 0;
+  left: 240px;
+  right: 0;
+  height: 28px;
+  -webkit-app-region: drag;
+  z-index: 9999;
+  pointer-events: none;
+}
