@@ -1,13 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { IconArrowLeft, IconLayoutList, IconLayoutRows } from '@tabler/icons-react';
+import { useRouter } from 'next/navigation';
+import { IconLayoutList, IconLayoutRows } from '@tabler/icons-react';
 import { useShallow } from 'zustand/shallow';
 import {
   ActionIcon,
   Box,
   Button,
   Group,
+  Modal,
   Paper,
   Progress,
   Stack,
@@ -42,9 +44,8 @@ export type TParsedRow = {
 
 type TStep = 'upload' | 'processing' | 'preview';
 
-const CONTENT_PADDING = 'var(--mantine-spacing-xl)';
-
 const ImportPage: React.FC = () => {
+  const router = useRouter();
   const { categories, segments } = useCategoriesStore(
     useShallow((s) => ({ categories: s.categories, segments: s.segments }))
   );
@@ -201,48 +202,9 @@ const ImportPage: React.FC = () => {
     setProcessedCount(0);
   };
 
-  if (step === 'upload') {
-    return (
-      <Stack gap="lg">
-        <Stack gap={4}>
-          <Title order={2} fw={700} style={{ letterSpacing: '-0.5px' }}>
-            Importer CSV
-          </Title>
-          <Text size="sm" c="dimmed">
-            Upload din bankeksport og gennemse transaktionerne før import
-          </Text>
-        </Stack>
-        <CSVDropzone onFile={handleFile} />
-      </Stack>
-    );
-  }
-
-  if (step === 'processing') {
-    return (
-      <Stack
-        gap="lg"
-        align="center"
-        justify="center"
-        style={{ height: `calc(100vh - ${CONTENT_PADDING} * 2)` }}
-      >
-        <Stack gap="xs" w={400}>
-          <Text fw={600} size="sm">
-            Analyserer transaktioner...
-          </Text>
-          <Progress value={progress} animated size="md" radius="md" />
-          <Text size="xs" c="dimmed">
-            {progress <= 10
-              ? 'Analyserer CSV-fil...'
-              : progress <= 20
-                ? 'Henter kategoriseringsregler...'
-                : progress <= 90
-                  ? `${processedCount} af ${totalCount} behandlet`
-                  : 'Kontrollerer dubletter...'}
-          </Text>
-        </Stack>
-      </Stack>
-    );
-  }
+  const handleClose = () => {
+    router.back();
+  };
 
   const unmatchedRows = rows.filter((r) => !r.duplicate && r.category_key === 'uncategorized');
   const matchedRows = rows.filter((r) => !r.duplicate && r.category_key !== 'uncategorized');
@@ -260,101 +222,171 @@ const ImportPage: React.FC = () => {
   };
 
   return (
-    <Box
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: `calc(100vh - ${CONTENT_PADDING} * 2)`,
-      }}
-    >
-      <Group justify="space-between" align="center" pb="md" style={{ flexShrink: 0 }}>
-        <Group gap="sm">
-          <ActionIcon variant="subtle" color="gray" onClick={handleBack}>
-            <IconArrowLeft size={18} />
-          </ActionIcon>
-          <Title order={4} fw={700}>
-            Gennemse import
-          </Title>
-        </Group>
-        <Group gap="sm">
-          <Button.Group>
-            <Button
-              variant={activeView === 'unmatched' ? 'light' : 'subtle'}
-              color="yellow"
-              size="sm"
-              onClick={() => setActiveView('unmatched')}
-            >
-              Opmærksomhed · {unmatchedRows.length}
-            </Button>
-            <Button
-              variant={activeView === 'matched' ? 'light' : 'subtle'}
-              color="teal"
-              size="sm"
-              onClick={() => setActiveView('matched')}
-            >
-              Klar · {matchedRows.length}
-            </Button>
-            {duplicateRows.length > 0 && (
-              <Button
-                variant={activeView === 'duplicate' ? 'light' : 'subtle'}
-                color="gray"
-                size="sm"
-                onClick={() => setActiveView('duplicate')}
-              >
-                Duplikater · {duplicateRows.length}
-              </Button>
-            )}
-          </Button.Group>
-          {matchedRows.length > 0 && (
-            <Button
-              variant="light"
-              color="teal"
-              onClick={handleImportAllMatched}
-              loading={isImporting}
-            >
-              Importer alle klar · {matchedRows.length}
-            </Button>
-          )}
-          <Button onClick={handleImport} loading={isImporting} disabled={importableCount === 0}>
-            Importer {importableCount}
-          </Button>
-          <Tooltip label={grouped ? 'Vis uden gruppering' : 'Vis med gruppering'} withArrow>
-            <ActionIcon
-              variant="subtle"
-              color="gray"
-              size="lg"
-              onClick={() => setGrouped((v) => !v)}
-            >
-              {grouped ? <IconLayoutList size={16} /> : <IconLayoutRows size={16} />}
-            </ActionIcon>
-          </Tooltip>
-        </Group>
-      </Group>
-
-      <Paper
-        p={0}
-        style={{
-          flex: 1,
-          minHeight: 0,
-          overflow: 'hidden',
+    <Modal
+      opened
+      onClose={handleClose}
+      size="95vw"
+      styles={{
+        root: { '--modal-size': '95vw' },
+        content: {
+          height: '90vh',
           display: 'flex',
           flexDirection: 'column',
-        }}
-      >
-        <ImportPreviewTable
-          rows={rows}
-          activeView={activeView}
-          grouped={grouped}
-          categories={categories}
-          segments={segments}
-          companies={companies}
-          rules={rules}
-          onChange={setRows}
-          onImportRow={handleImportRow}
-          onImportRows={handleImportRows}
-        />
-      </Paper>
-    </Box>
+        },
+        body: {
+          flex: 1,
+          minHeight: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          padding: 0,
+          overflow: 'hidden',
+        },
+        header: {
+          padding: 'var(--mantine-spacing-md) var(--mantine-spacing-xl)',
+          borderBottom: '1px solid var(--mantine-color-gray-2)',
+        },
+      }}
+      title={
+        <Text fw={700} size="lg" style={{ letterSpacing: '-0.3px' }}>
+          Importer CSV
+        </Text>
+      }
+      withCloseButton
+      centered
+    >
+      {step === 'upload' && (
+        <Stack gap="lg" p="xl">
+          <Text size="sm" c="dimmed">
+            Upload din bankeksport og gennemse transaktionerne før import
+          </Text>
+          <CSVDropzone onFile={handleFile} />
+        </Stack>
+      )}
+
+      {step === 'processing' && (
+        <Stack gap="lg" align="center" justify="center" style={{ flex: 1 }}>
+          <Stack gap="xs" w={400}>
+            <Text fw={600} size="sm">
+              Analyserer transaktioner...
+            </Text>
+            <Progress value={progress} animated size="md" radius="md" />
+            <Text size="xs" c="dimmed">
+              {progress <= 10
+                ? 'Analyserer CSV-fil...'
+                : progress <= 20
+                  ? 'Henter kategoriseringsregler...'
+                  : progress <= 90
+                    ? `${processedCount} af ${totalCount} behandlet`
+                    : 'Kontrollerer dubletter...'}
+            </Text>
+          </Stack>
+        </Stack>
+      )}
+
+      {step === 'preview' && (
+        <Box
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            flex: 1,
+            minHeight: 0,
+          }}
+        >
+          <Group
+            justify="space-between"
+            align="center"
+            p="md"
+            style={{ flexShrink: 0, borderBottom: '1px solid var(--mantine-color-gray-2)' }}
+          >
+            <Group gap="sm">
+              <Button variant="subtle" color="gray" size="sm" onClick={handleBack}>
+                ← Tilbage
+              </Button>
+              <Title order={5} fw={700}>
+                Gennemse import
+              </Title>
+            </Group>
+            <Group gap="sm">
+              <Button.Group>
+                <Button
+                  variant={activeView === 'unmatched' ? 'light' : 'subtle'}
+                  color="yellow"
+                  size="sm"
+                  onClick={() => setActiveView('unmatched')}
+                >
+                  Opmærksomhed · {unmatchedRows.length}
+                </Button>
+                <Button
+                  variant={activeView === 'matched' ? 'light' : 'subtle'}
+                  color="teal"
+                  size="sm"
+                  onClick={() => setActiveView('matched')}
+                >
+                  Klar · {matchedRows.length}
+                </Button>
+                {duplicateRows.length > 0 && (
+                  <Button
+                    variant={activeView === 'duplicate' ? 'light' : 'subtle'}
+                    color="gray"
+                    size="sm"
+                    onClick={() => setActiveView('duplicate')}
+                  >
+                    Duplikater · {duplicateRows.length}
+                  </Button>
+                )}
+              </Button.Group>
+              {matchedRows.length > 0 && (
+                <Button
+                  variant="light"
+                  color="teal"
+                  onClick={handleImportAllMatched}
+                  loading={isImporting}
+                >
+                  Importer alle klar · {matchedRows.length}
+                </Button>
+              )}
+              <Button onClick={handleImport} loading={isImporting} disabled={importableCount === 0}>
+                Importer {importableCount}
+              </Button>
+              <Tooltip label={grouped ? 'Vis uden gruppering' : 'Vis med gruppering'} withArrow>
+                <ActionIcon
+                  variant="subtle"
+                  color="gray"
+                  size="lg"
+                  onClick={() => setGrouped((v) => !v)}
+                >
+                  {grouped ? <IconLayoutList size={16} /> : <IconLayoutRows size={16} />}
+                </ActionIcon>
+              </Tooltip>
+            </Group>
+          </Group>
+
+          <Paper
+            p={0}
+            style={{
+              flex: 1,
+              minHeight: 0,
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            <ImportPreviewTable
+              rows={rows}
+              activeView={activeView}
+              grouped={grouped}
+              categories={categories}
+              segments={segments}
+              companies={companies}
+              rules={rules}
+              onChange={setRows}
+              onImportRow={handleImportRow}
+              onImportRows={handleImportRows}
+            />
+          </Paper>
+        </Box>
+      )}
+    </Modal>
   );
 };
 
