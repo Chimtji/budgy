@@ -110,6 +110,12 @@ export default function CategoriesListPage() {
     ? transactions.filter((t) => t.segment_key === selectedSegment)
     : transactions;
 
+  const visibleStats = (() => {
+    const total = Math.abs(visibleTransactions.reduce((s, t) => s + t.amount, 0));
+    const months = new Set(visibleTransactions.map((t) => t.date.slice(0, 7))).size;
+    return { total, perMonth: months > 0 ? total / months : 0 };
+  })();
+
   const activeCat = selectedCategory
     ? categories.find((c) => c.key === selectedCategory)
     : undefined;
@@ -381,68 +387,111 @@ export default function CategoriesListPage() {
             </Text>
           </Stack>
         ) : (
-          <ScrollArea style={{ flex: 1 }} p="sm">
-            <Stack gap={4}>
-              {visibleTransactions.map((t) => {
-                const seg = segments.find(
-                  (s) => s.key === t.segment_key && s.category_key === selectedCategory
-                );
-                const co = companies.find((c) => c.name === t.company_name);
-                return (
-                  <Group
-                    key={t.id}
-                    justify="space-between"
-                    wrap="nowrap"
-                    px="sm"
-                    py="xs"
-                    onClick={() => setSelectedTransaction(t)}
-                    style={{
-                      borderRadius: 6,
-                      background: 'var(--mantine-color-default-hover)',
-                      cursor: 'pointer',
-                    }}
+          <>
+            <Group
+              justify="space-between"
+              align="center"
+              px="sm"
+              py="xs"
+              style={{ borderBottom: '1px solid var(--mantine-color-gray-2)', flexShrink: 0 }}
+            >
+              <Text size="xs" c="dimmed" fw={500}>
+                {visibleTransactions.length} transaktioner
+              </Text>
+              <Group gap="lg" wrap="nowrap">
+                <Stack gap={0} align="flex-end">
+                  <Text
+                    size="xs"
+                    c="dimmed"
+                    tt="uppercase"
+                    fw={600}
+                    style={{ letterSpacing: '0.05em' }}
                   >
-                    <Group gap="sm" wrap="nowrap" style={{ minWidth: 0, flex: 1 }}>
-                      {t.company_name && (
-                        <CompanyLogo
-                          domain={co?.domain ?? t.company_domain}
-                          name={t.company_name}
-                          size={24}
-                        />
-                      )}
-                      <Text size="sm" fw={500} truncate style={{ minWidth: 0 }}>
-                        {t.company_name ?? t.description}
-                      </Text>
-                      {seg && (
-                        <Badge
-                          variant="light"
-                          color="gray"
-                          size="xs"
-                          radius="sm"
-                          style={{ flexShrink: 0 }}
+                    I alt
+                  </Text>
+                  <Text fw={700} style={{ fontSize: 15, letterSpacing: '-0.3px', lineHeight: 1.2 }}>
+                    {formatDKK(visibleStats.total)}
+                  </Text>
+                </Stack>
+                <Stack gap={0} align="flex-end">
+                  <Text
+                    size="xs"
+                    c="dimmed"
+                    tt="uppercase"
+                    fw={600}
+                    style={{ letterSpacing: '0.05em' }}
+                  >
+                    Pr. md.
+                  </Text>
+                  <Text fw={700} style={{ fontSize: 15, letterSpacing: '-0.3px', lineHeight: 1.2 }}>
+                    {formatDKK(visibleStats.perMonth)}
+                  </Text>
+                </Stack>
+              </Group>
+            </Group>
+            <ScrollArea style={{ flex: 1 }} p="sm">
+              <Stack gap={4}>
+                {visibleTransactions.map((t) => {
+                  const seg = segments.find(
+                    (s) => s.key === t.segment_key && s.category_key === selectedCategory
+                  );
+                  const co = companies.find((c) => c.name === t.company_name);
+                  return (
+                    <Group
+                      key={t.id}
+                      justify="space-between"
+                      wrap="nowrap"
+                      px="sm"
+                      py="xs"
+                      onClick={() => setSelectedTransaction(t)}
+                      style={{
+                        borderRadius: 6,
+                        background: 'var(--mantine-color-default-hover)',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <Group gap="sm" wrap="nowrap" style={{ minWidth: 0, flex: 1 }}>
+                        {t.company_name && (
+                          <CompanyLogo
+                            domain={co?.domain ?? t.company_domain}
+                            name={t.company_name}
+                            size={24}
+                          />
+                        )}
+                        <Text size="sm" fw={500} truncate style={{ minWidth: 0 }}>
+                          {t.company_name ?? t.description}
+                        </Text>
+                        {seg && (
+                          <Badge
+                            variant="light"
+                            color="gray"
+                            size="xs"
+                            radius="sm"
+                            style={{ flexShrink: 0 }}
+                          >
+                            {seg.label}
+                          </Badge>
+                        )}
+                      </Group>
+                      <Group gap="sm" wrap="nowrap" style={{ flexShrink: 0 }}>
+                        <Text
+                          size="sm"
+                          fw={600}
+                          c={t.amount < 0 ? 'red.6' : 'teal.6'}
+                          style={{ whiteSpace: 'nowrap' }}
                         >
-                          {seg.label}
-                        </Badge>
-                      )}
+                          {formatDKK(t.amount)}
+                        </Text>
+                        <Text size="xs" c="dimmed" style={{ whiteSpace: 'nowrap' }}>
+                          {formatDate(t.date)}
+                        </Text>
+                      </Group>
                     </Group>
-                    <Group gap="sm" wrap="nowrap" style={{ flexShrink: 0 }}>
-                      <Text
-                        size="sm"
-                        fw={600}
-                        c={t.amount < 0 ? 'red.6' : 'teal.6'}
-                        style={{ whiteSpace: 'nowrap' }}
-                      >
-                        {formatDKK(t.amount)}
-                      </Text>
-                      <Text size="xs" c="dimmed" style={{ whiteSpace: 'nowrap' }}>
-                        {formatDate(t.date)}
-                      </Text>
-                    </Group>
-                  </Group>
-                );
-              })}
-            </Stack>
-          </ScrollArea>
+                  );
+                })}
+              </Stack>
+            </ScrollArea>
+          </>
         )}
       </Paper>
 

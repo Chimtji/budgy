@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   IconAdjustments,
   IconArrowBack,
@@ -212,6 +212,53 @@ function resolveConfirmArgs(sub: TDetectedSubscription): {
 }
 
 type TFilter = 'confirmed' | 'detected' | 'ignored';
+
+const noteTextareaStyles = {
+  input: {
+    background: '#fefce8',
+    border: 'none',
+    borderRadius: 6,
+    fontSize: 13,
+    lineHeight: 1.7,
+    color: '#1c1917',
+    padding: '10px 12px',
+    resize: 'none' as const,
+  },
+};
+
+const NoteTextarea: React.FC<{
+  initialValue: string;
+  onSave: (val: string | null) => void;
+}> = ({ initialValue, onSave }) => {
+  const [value, setValue] = useState(initialValue);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const v = e.currentTarget.value;
+    setValue(v);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => onSave(v.trim() || null), 600);
+  };
+
+  useEffect(
+    () => () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    },
+    []
+  );
+
+  return (
+    <Textarea
+      placeholder="Skriv en note..."
+      autosize
+      minRows={3}
+      maxRows={8}
+      value={value}
+      onChange={handleChange}
+      styles={noteTextareaStyles}
+    />
+  );
+};
 
 const filterTabStyle = (active: boolean): React.CSSProperties => ({
   padding: '4px 12px',
@@ -808,31 +855,10 @@ export default function SubscriptionsListPage() {
                                     </Box>
                                   </HoverCard.Target>
                                   <HoverCard.Dropdown p={0}>
-                                    <Textarea
-                                      placeholder="Skriv en note..."
-                                      autosize
-                                      minRows={3}
-                                      maxRows={8}
+                                    <NoteTextarea
                                       key={sub.key}
-                                      defaultValue={sub.note ?? ''}
-                                      onBlur={(e) => {
-                                        const val = e.currentTarget.value.trim() || null;
-                                        if (val !== (sub.note ?? null)) {
-                                          setNote(sub.manualMatcherId!, val);
-                                        }
-                                      }}
-                                      styles={{
-                                        input: {
-                                          background: '#fefce8',
-                                          border: 'none',
-                                          borderRadius: 6,
-                                          fontSize: 13,
-                                          lineHeight: 1.7,
-                                          color: '#1c1917',
-                                          padding: '10px 12px',
-                                          resize: 'none',
-                                        },
-                                      }}
+                                      initialValue={sub.note ?? ''}
+                                      onSave={(val) => setNote(sub.manualMatcherId!, val)}
                                     />
                                   </HoverCard.Dropdown>
                                 </HoverCard>
@@ -1068,31 +1094,10 @@ export default function SubscriptionsListPage() {
                           </ActionIcon>
                         </HoverCard.Target>
                         <HoverCard.Dropdown p={0}>
-                          <Textarea
-                            placeholder="Skriv en note..."
-                            autosize
-                            minRows={3}
-                            maxRows={8}
+                          <NoteTextarea
                             key={selectedSub.key}
-                            defaultValue={selectedSub.note ?? ''}
-                            onBlur={(e) => {
-                              const val = e.currentTarget.value.trim() || null;
-                              if (val !== (selectedSub.note ?? null)) {
-                                setNote(selectedSub.manualMatcherId!, val);
-                              }
-                            }}
-                            styles={{
-                              input: {
-                                background: '#fefce8',
-                                border: 'none',
-                                borderRadius: 6,
-                                fontSize: 13,
-                                lineHeight: 1.7,
-                                color: '#1c1917',
-                                padding: '10px 12px',
-                                resize: 'none',
-                              },
-                            }}
+                            initialValue={selectedSub.note ?? ''}
+                            onSave={(val) => setNote(selectedSub.manualMatcherId!, val)}
                           />
                         </HoverCard.Dropdown>
                       </HoverCard>

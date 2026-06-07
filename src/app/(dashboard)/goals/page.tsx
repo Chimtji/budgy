@@ -98,18 +98,17 @@ export default function GoalsPage() {
       for (const tx of result.data) {
         if (tx.is_archived) continue;
         if (!tx.date.startsWith(month)) continue;
-        if (tx.amount >= 0) continue;
         const catKey = tx.category_key ?? '';
         const segKey = tx.segment_key ?? '';
-        const amt = Math.abs(tx.amount);
+        const amt = -tx.amount;
         // Specific segment bucket
         if (segKey) {
           const k = slotKey(catKey, segKey);
-          map[k] = (map[k] ?? 0) + amt;
+          map[k] = Math.max(0, (map[k] ?? 0) + amt);
         }
         // All-segments bucket (segment_key = '')
         const allK = slotKey(catKey, '');
-        map[allK] = (map[allK] ?? 0) + amt;
+        map[allK] = Math.max(0, (map[allK] ?? 0) + amt);
       }
       setSpendingMap(map);
       setTxLoading(false);

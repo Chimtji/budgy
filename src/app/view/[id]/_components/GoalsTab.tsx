@@ -28,7 +28,7 @@ export const GoalsTab = ({ goals, transactions, categories }: TProps) => {
           (g.segment_key === '' || t.segment_key === g.segment_key) &&
           new Date(t.date) >= from
       );
-      const spent = Math.abs(catTx.filter((t) => t.amount < 0).reduce((s, t) => s + t.amount, 0));
+      const spent = Math.max(0, -catTx.reduce((s, t) => s + t.amount, 0));
       const pct = Math.min(100, Math.round((spent / g.amount_limit) * 100));
       const cat = categories.find((c) => c.key === g.category_key);
       return { ...g, month, spent, pct, cat };

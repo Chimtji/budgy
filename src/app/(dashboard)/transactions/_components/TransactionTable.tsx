@@ -14,6 +14,8 @@ import {
 import {
   ActionIcon,
   Badge,
+  Button,
+  Checkbox,
   Group,
   Pagination,
   Paper,
@@ -52,6 +54,7 @@ type TProps = {
   onArchive: (t: TTransaction) => void;
   onUnarchive: (t: TTransaction) => void;
   onDelete: (t: TTransaction) => void;
+  onBulkEdit: (ids: string[]) => void;
   showArchived: boolean;
 };
 
@@ -80,6 +83,7 @@ const TransactionTable: React.FC<TProps> = ({
   onArchive,
   onUnarchive,
   onDelete,
+  onBulkEdit,
   showArchived,
 }) => {
   const companies = useCompaniesStore((s) => s.companies);
@@ -89,9 +93,11 @@ const TransactionTable: React.FC<TProps> = ({
   const [sortDir, setSortDir] = useState<TSortDir>('desc');
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<TTransaction | null>(null);
+  const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     setPage(1);
+    setCheckedIds(new Set());
   }, [transactions, debouncedSearch]);
 
   const sorted = useMemo(() => {
@@ -141,16 +147,64 @@ const TransactionTable: React.FC<TProps> = ({
     </Table.Th>
   );
 
+  const allPageChecked = paged.length > 0 && paged.every((t) => checkedIds.has(t.id));
+  const someChecked = checkedIds.size > 0;
+
+  const toggleRow = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCheckedIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const toggleAll = () => {
+    if (allPageChecked) {
+      setCheckedIds((prev) => {
+        const next = new Set(prev);
+        paged.forEach((t) => next.delete(t.id));
+        return next;
+      });
+    } else {
+      setCheckedIds((prev) => new Set([...prev, ...paged.map((t) => t.id)]));
+    }
+  };
+
   return (
     <>
-      <TextInput
-        placeholder="Søg på beskrivelse, modtager eller firma..."
-        leftSection={<IconSearch size={16} />}
-        value={search}
-        onChange={(e) => setSearch(e.currentTarget.value)}
-        mb="sm"
-        style={{ flexShrink: 0 }}
-      />
+      <Group justify="space-between" mb="sm" style={{ flexShrink: 0 }}>
+        <TextInput
+          placeholder="Søg på beskrivelse, modtager eller firma..."
+          leftSection={<IconSearch size={16} />}
+          value={search}
+          onChange={(e) => setSearch(e.currentTarget.value)}
+          style={{ flex: 1 }}
+        />
+        {someChecked && (
+          <Group gap="xs">
+            <Text size="sm" c="dimmed">
+              {checkedIds.size} valgt
+            </Text>
+            <Button
+              size="xs"
+              variant="light"
+              leftSection={<IconPencil size={14} />}
+              onClick={() => onBulkEdit([...checkedIds])}
+            >
+              Masseredigér
+            </Button>
+            <Button
+              size="xs"
+              variant="subtle"
+              color="gray"
+              onClick={() => setCheckedIds(new Set())}
+            >
+              Fravælg
+            </Button>
+          </Group>
+        )}
+      </Group>
       <Paper
         p="sm"
         style={{
@@ -172,6 +226,14 @@ const TransactionTable: React.FC<TProps> = ({
               }}
             >
               <Table.Tr>
+                <Table.Th w={32}>
+                  <Checkbox
+                    size="xs"
+                    checked={allPageChecked}
+                    indeterminate={!allPageChecked && paged.some((t) => checkedIds.has(t.id))}
+                    onChange={toggleAll}
+                  />
+                </Table.Th>
                 <SortableTh field="date">Dato</SortableTh>
                 <Table.Th>Virksomhed</Table.Th>
                 <SortableTh field="amount">Beløb</SortableTh>
@@ -190,9 +252,20 @@ const TransactionTable: React.FC<TProps> = ({
                   <Table.Tr
                     key={t.id}
                     onClick={() => setSelected(t)}
-                    style={{ cursor: 'pointer', background: 'var(--mantine-color-default-hover)' }}
+                    style={{
+                      cursor: 'pointer',
+                      background: checkedIds.has(t.id)
+                        ? 'var(--mantine-color-violet-0)'
+                        : 'var(--mantine-color-default-hover)',
+                    }}
                   >
-                    <Table.Td style={{ borderRadius: '6px 0 0 6px' }}>
+                    <Table.Td
+                      style={{ borderRadius: '6px 0 0 6px' }}
+                      onClick={(e) => toggleRow(t.id, e)}
+                    >
+                      <Checkbox size="xs" checked={checkedIds.has(t.id)} onChange={() => {}} />
+                    </Table.Td>
+                    <Table.Td>
                       <Text size="sm" c="dimmed" style={{ whiteSpace: 'nowrap' }}>
                         {new Date(t.date).toLocaleDateString('da-DK')}
                       </Text>

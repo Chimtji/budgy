@@ -1,7 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { IconPencil, IconPlus, IconSearch, IconTrash } from '@tabler/icons-react';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  IconChevronDown,
+  IconChevronUp,
+  IconPencil,
+  IconPlus,
+  IconSearch,
+  IconSelector,
+  IconTrash,
+} from '@tabler/icons-react';
 import { useShallow } from 'zustand/shallow';
 import {
   ActionIcon,
@@ -17,6 +25,7 @@ import {
   Text,
   TextInput,
   Title,
+  UnstyledButton,
 } from '@mantine/core';
 import { showErrorNotification } from '@/notifications/feedback';
 import { matchesPattern } from '@/service/categorization/engine';
@@ -44,6 +53,44 @@ const RulesPage: React.FC = () => {
   const [viewing, setViewing] = useState<TRuleRow | null>(null);
   const [editing, setEditing] = useState<TRuleRow | null>(null);
   const [showCreate, setShowCreate] = useState(false);
+  type TSortField = 'pattern' | 'category_key' | 'match_count' | 'updated_at';
+  type TSortDir = 'asc' | 'desc';
+  const [sortField, setSortField] = useState<TSortField>('match_count');
+  const [sortDir, setSortDir] = useState<TSortDir>('desc');
+
+  const handleSort = (field: TSortField) => {
+    if (field === sortField) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    else {
+      setSortField(field);
+      setSortDir(field === 'match_count' ? 'desc' : 'asc');
+    }
+  };
+
+  const SortableTh: React.FC<{
+    field: TSortField;
+    children: React.ReactNode;
+    w?: number;
+    style?: React.CSSProperties;
+  }> = ({ field, children, w, style }) => (
+    <Table.Th w={w} style={style}>
+      <UnstyledButton onClick={() => handleSort(field)} style={{ width: '100%' }}>
+        <Group gap={4} wrap="nowrap">
+          <Text size="sm" fw={500}>
+            {children}
+          </Text>
+          {field === sortField ? (
+            sortDir === 'asc' ? (
+              <IconChevronUp size={14} />
+            ) : (
+              <IconChevronDown size={14} />
+            )
+          ) : (
+            <IconSelector size={14} />
+          )}
+        </Group>
+      </UnstyledButton>
+    </Table.Th>
+  );
 
   useEffect(() => {
     useCompaniesStore.getState().init();
@@ -94,9 +141,20 @@ const RulesPage: React.FC = () => {
     setViewing(null);
   };
 
-  const filtered = search.trim()
-    ? rules.filter((r) => r.pattern.toLowerCase().includes(search.toLowerCase()))
-    : rules;
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    const base = q ? rules.filter((r) => r.pattern.toLowerCase().includes(q)) : rules;
+    return [...base].sort((a, b) => {
+      let diff = 0;
+      if (sortField === 'pattern') diff = a.pattern.localeCompare(b.pattern, 'da');
+      else if (sortField === 'category_key')
+        diff = a.category_key.localeCompare(b.category_key, 'da');
+      else if (sortField === 'match_count')
+        diff = getMatchCount(a.pattern) - getMatchCount(b.pattern);
+      else if (sortField === 'updated_at') diff = a.updated_at.localeCompare(b.updated_at);
+      return sortDir === 'asc' ? diff : -diff;
+    });
+  }, [rules, search, sortField, sortDir, transactions]);
 
   const getMatchCount = (pattern: string) =>
     transactions.filter((t) => matchesPattern(pattern, `${t.description} ${t.recipient}`)).length;
@@ -163,16 +221,18 @@ const RulesPage: React.FC = () => {
                 }}
               >
                 <Table.Tr>
-                  <Table.Th>Mønster</Table.Th>
+                  <SortableTh field="pattern">Mønster</SortableTh>
                   <Table.Th w={160}>Virksomhed</Table.Th>
-                  <Table.Th w={140}>Kategori</Table.Th>
+                  <SortableTh field="category_key" w={140}>
+                    Kategori
+                  </SortableTh>
                   <Table.Th w={140}>Segment</Table.Th>
-                  <Table.Th w={110} style={{ whiteSpace: 'nowrap' }}>
+                  <SortableTh field="match_count" w={110} style={{ whiteSpace: 'nowrap' }}>
                     Antal match
-                  </Table.Th>
-                  <Table.Th w={130} style={{ whiteSpace: 'nowrap' }}>
+                  </SortableTh>
+                  <SortableTh field="updated_at" w={130} style={{ whiteSpace: 'nowrap' }}>
                     Sidst opdateret
-                  </Table.Th>
+                  </SortableTh>
                   <Table.Th w={72} />
                 </Table.Tr>
               </Table.Thead>

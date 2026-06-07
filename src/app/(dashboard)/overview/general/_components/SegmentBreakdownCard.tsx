@@ -12,6 +12,7 @@ type TProps = {
   color: string;
   segments: TSegmentAmount[];
   infoText: string;
+  onClick?: () => void;
 };
 
 const SegmentBreakdownCard: React.FC<TProps> = ({
@@ -21,6 +22,7 @@ const SegmentBreakdownCard: React.FC<TProps> = ({
   color,
   segments,
   infoText,
+  onClick,
 }) => {
   const total = segments.reduce((s, seg) => s + seg.amount, 0);
   const activeSegments = segments.filter((s) => s.amount > 0).sort((a, b) => b.amount - a.amount);
@@ -47,7 +49,12 @@ const SegmentBreakdownCard: React.FC<TProps> = ({
   );
 
   return (
-    <Card withBorder p="md" style={{ height: '100%' }}>
+    <Card
+      withBorder
+      p="md"
+      style={{ height: '100%', cursor: onClick ? 'pointer' : undefined }}
+      onClick={onClick}
+    >
       <Group justify="space-between" mb={6} wrap="nowrap">
         <Group gap={8} wrap="nowrap">
           <ThemeIcon size={22} radius="md" variant="light" color={color}>

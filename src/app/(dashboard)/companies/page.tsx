@@ -2,11 +2,14 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
+  IconChevronDown,
+  IconChevronUp,
   IconLayoutList,
   IconList,
   IconPencil,
   IconPlus,
   IconSearch,
+  IconSelector,
   IconTrash,
 } from '@tabler/icons-react';
 import { useShallow } from 'zustand/shallow';
@@ -29,6 +32,9 @@ import { useCategoriesStore } from '@/stores/categories/categoriesStore';
 import { useCompaniesStore } from '@/stores/companies/companiesStore';
 import CompanyForm from './_components/CompanyForm';
 import CompanyLogo from './_components/CompanyLogo';
+
+type TSortField = 'name' | 'domain' | 'category_key';
+type TSortDir = 'asc' | 'desc';
 
 type TCompany = {
   id: string;
@@ -56,6 +62,41 @@ const CompaniesPage: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [search, setSearch] = useState('');
   const [grouped, setGrouped] = useState(true);
+  const [sortField, setSortField] = useState<TSortField>('name');
+  const [sortDir, setSortDir] = useState<TSortDir>('asc');
+
+  const handleSort = (field: TSortField) => {
+    if (field === sortField) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    else {
+      setSortField(field);
+      setSortDir('asc');
+    }
+  };
+
+  const SortableTh: React.FC<{ field: TSortField; children: React.ReactNode; w?: number }> = ({
+    field,
+    children,
+    w,
+  }) => (
+    <Table.Th w={w}>
+      <UnstyledButton onClick={() => handleSort(field)} style={{ width: '100%' }}>
+        <Group gap={4} wrap="nowrap">
+          <Text size="sm" fw={500}>
+            {children}
+          </Text>
+          {field === sortField ? (
+            sortDir === 'asc' ? (
+              <IconChevronUp size={14} />
+            ) : (
+              <IconChevronDown size={14} />
+            )
+          ) : (
+            <IconSelector size={14} />
+          )}
+        </Group>
+      </UnstyledButton>
+    </Table.Th>
+  );
   const scrollContainer = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -68,8 +109,16 @@ const CompaniesPage: React.FC = () => {
       .filter(
         (c) => !q || c.name.toLowerCase().includes(q) || (c.domain ?? '').toLowerCase().includes(q)
       )
-      .sort((a, b) => a.name.localeCompare(b.name, 'da'));
-  }, [companies, search]);
+      .sort((a, b) => {
+        let diff = 0;
+        if (sortField === 'name') diff = a.name.localeCompare(b.name, 'da');
+        else if (sortField === 'domain')
+          diff = (a.domain ?? '').localeCompare(b.domain ?? '', 'da');
+        else if (sortField === 'category_key')
+          diff = (a.category_key ?? '').localeCompare(b.category_key ?? '', 'da');
+        return sortDir === 'asc' ? diff : -diff;
+      });
+  }, [companies, search, sortField, sortDir]);
 
   const grouped_map = useMemo(() => {
     const map = new Map<string, TCompany[]>();
@@ -261,10 +310,10 @@ const CompaniesPage: React.FC = () => {
               >
                 <Table.Tr>
                   <Table.Th w={44} />
-                  <Table.Th>Navn</Table.Th>
-                  <Table.Th>Domæne</Table.Th>
+                  <SortableTh field="name">Navn</SortableTh>
+                  <SortableTh field="domain">Domæne</SortableTh>
                   <Table.Th>Søgeord</Table.Th>
-                  <Table.Th>Kategori</Table.Th>
+                  <SortableTh field="category_key">Kategori</SortableTh>
                   <Table.Th />
                 </Table.Tr>
               </Table.Thead>

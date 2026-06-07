@@ -122,11 +122,11 @@ export default function GoalModal({
       }
       const counts: Record<string, number> = {};
       for (const tx of result.data) {
-        if (tx.is_archived || tx.amount >= 0) continue;
+        if (tx.is_archived) continue;
         if (tx.category_key !== categoryKey) continue;
         if (segmentKey && tx.segment_key !== segmentKey) continue;
         const ym = tx.date.slice(0, 7);
-        counts[ym] = (counts[ym] ?? 0) + Math.abs(tx.amount);
+        counts[ym] = Math.max(0, (counts[ym] ?? 0) - tx.amount);
       }
       // Only include months with at least some spending, last 6 months max
       const sorted = Object.entries(counts)

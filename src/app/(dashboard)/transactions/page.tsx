@@ -4,9 +4,12 @@ import { useEffect, useState } from 'react';
 import { IconArchive, IconEye, IconEyeOff } from '@tabler/icons-react';
 import { useShallow } from 'zustand/shallow';
 import { Badge, Box, Button, Group, Skeleton, Stack, Text, Title } from '@mantine/core';
+import { showErrorNotification, showSuccessNotification } from '@/notifications/feedback';
+import { bulkUpdateTransactions } from '@/service/database/transactions/bulkUpdate';
 import { type TTransaction } from '@/service/database/transactions/getAll';
 import { useCategoriesStore } from '@/stores/categories/categoriesStore';
 import { useTransactionsStore } from '@/stores/transactions/transactionsStore';
+import BulkEditModal from './_components/BulkEditModal';
 import EditCategoryModal from './_components/EditCategoryModal';
 import TransactionFilters from './_components/TransactionFilters';
 import TransactionTable from './_components/TransactionTable';
@@ -40,6 +43,25 @@ const TransactionsPage: React.FC = () => {
   const [editing, setEditing] = useState<TTransaction | null>(null);
   const [showArchived, setShowArchived] = useState(false);
   const [hideInternal, setHideInternal] = useState(true);
+  const [bulkIds, setBulkIds] = useState<string[]>([]);
+
+  const handleBulkSave = async (input: {
+    category_key: string;
+    segment_key: string;
+    company_name: string | null;
+  }) => {
+    const result = await bulkUpdateTransactions({ ids: bulkIds, ...input });
+    if (!result.success) {
+      showErrorNotification({ title: 'Fejl', message: 'Kunne ikke opdatere transaktioner' });
+      return;
+    }
+    showSuccessNotification({
+      title: 'Gemt',
+      message: `${result.data.updated} transaktioner opdateret`,
+    });
+    init(useTransactionsStore.getState().filters);
+    setBulkIds([]);
+  };
 
   useEffect(() => {
     useTransactionsStore.getState().init({});
@@ -157,6 +179,7 @@ const TransactionsPage: React.FC = () => {
           onArchive={(t) => archiveTransaction(t.id)}
           onUnarchive={(t) => unarchiveTransaction(t.id)}
           onDelete={(t) => deleteTransaction(t.id)}
+          onBulkEdit={setBulkIds}
         />
       )}
 
@@ -166,6 +189,15 @@ const TransactionsPage: React.FC = () => {
         segments={segments}
         onClose={() => setEditing(null)}
         onSave={handleSave}
+      />
+
+      <BulkEditModal
+        opened={bulkIds.length > 0}
+        count={bulkIds.length}
+        categories={categories}
+        segments={segments}
+        onClose={() => setBulkIds([])}
+        onSave={handleBulkSave}
       />
     </Box>
   );

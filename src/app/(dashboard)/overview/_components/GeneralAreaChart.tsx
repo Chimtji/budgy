@@ -8,6 +8,7 @@ import type { TTransaction } from '@/service/database/transactions/getAll';
 
 type TProps = {
   transactions: TTransaction[];
+  onMonthClick?: (monthKey: string) => void;
 };
 
 const formatDKK = (v: number) =>
@@ -32,8 +33,11 @@ const MONTH_LABELS: Record<string, string> = {
   '12': 'Dec',
 };
 
-const GeneralAreaChart: React.FC<TProps> = ({ transactions }) => {
+const GeneralAreaChart: React.FC<TProps> = ({ transactions, onMonthClick }) => {
+  const monthKeyMap = useMemo(() => new Map<string, string>(), []);
+
   const data = useMemo(() => {
+    monthKeyMap.clear();
     const income = new Map<string, number>();
     const spend = new Map<string, number>();
     for (const t of transactions) {
@@ -49,14 +53,26 @@ const GeneralAreaChart: React.FC<TProps> = ({ transactions }) => {
       }
     }
     const months = [...new Set([...income.keys(), ...spend.keys()])].sort();
-    return months.map((m) => ({
-      month: `${MONTH_LABELS[m.slice(5, 7)]} ${m.slice(2, 4)}`,
-      Indkomst: Math.round(income.get(m) ?? 0),
-      Udgifter: Math.round(spend.get(m) ?? 0),
-    }));
-  }, [transactions]);
+    return months.map((m) => {
+      const label = `${MONTH_LABELS[m.slice(5, 7)]} ${m.slice(2, 4)}`;
+      monthKeyMap.set(label, m);
+      return {
+        month: label,
+        Indkomst: Math.round(income.get(m) ?? 0),
+        Udgifter: Math.round(spend.get(m) ?? 0),
+      };
+    });
+  }, [transactions, monthKeyMap]);
 
   if (data.length === 0) return null;
+
+  const handleClick = (payload: any) => {
+    const label = payload?.activeLabel ?? payload?.activePayload?.[0]?.payload?.month;
+    if (label && onMonthClick) {
+      const key = monthKeyMap.get(label);
+      if (key) onMonthClick(key);
+    }
+  };
 
   return (
     <Card withBorder p="md">
@@ -87,8 +103,14 @@ const GeneralAreaChart: React.FC<TProps> = ({ transactions }) => {
         }}
         valueFormatter={formatDKK}
         curveType="monotone"
-        barProps={{ fillOpacity: 0.25, radius: 4 }}
+        barProps={{
+          fillOpacity: 0.25,
+          radius: 4,
+          style: { cursor: onMonthClick ? 'pointer' : undefined },
+        }}
         lineProps={{ strokeWidth: 2 }}
+        composedChartProps={{ onClick: handleClick }}
+        style={{ cursor: onMonthClick ? 'pointer' : undefined }}
       />
     </Card>
   );

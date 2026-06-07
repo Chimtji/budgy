@@ -38,3 +38,5 @@ extraMetadata:
   main: electron-dist/main.js
 
 nativeRebuilder: sequential
+
+afterPack: build/afterpack.js

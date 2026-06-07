@@ -35,19 +35,30 @@ const formatDKK = (n: number) =>
     maximumFractionDigits: 0,
   }).format(n);
 
-const getCutoff = (interval: string): string | null => {
+const ms = (year: number, month: number): string => {
+  const d = new Date(year, month, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`;
+};
+
+const getCutoff = (interval: string): { from: string | null; to: string | null } => {
   const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth();
   switch (interval) {
     case '3m':
-      return new Date(now.getFullYear(), now.getMonth() - 3, 1).toISOString().slice(0, 10);
+      return { from: ms(y, m - 2), to: null };
     case '6m':
-      return new Date(now.getFullYear(), now.getMonth() - 6, 1).toISOString().slice(0, 10);
+      return { from: ms(y, m - 5), to: null };
     case '12m':
-      return new Date(now.getFullYear(), now.getMonth() - 12, 1).toISOString().slice(0, 10);
+      return { from: ms(y, m - 11), to: null };
     case 'ytd':
-      return `${now.getFullYear()}-01-01`;
+      return { from: `${y}-01-01`, to: null };
+    case 'current_month':
+      return { from: ms(y, m), to: null };
+    case 'last_month':
+      return { from: ms(y, m - 1), to: ms(y, m) };
     default:
-      return null;
+      return { from: null, to: null };
   }
 };
 
@@ -111,8 +122,9 @@ export default function IncomeOverviewPage() {
 
   const transactions = useMemo(() => {
     let txns = allTransactions.filter((t) => t.amount > 0 && t.category_key === 'income');
-    const cutoff = getCutoff(interval);
-    if (cutoff) txns = txns.filter((t) => t.date >= cutoff);
+    const { from, to } = getCutoff(interval);
+    if (from) txns = txns.filter((t) => t.date >= from);
+    if (to) txns = txns.filter((t) => t.date < to);
     if (selectedSegment !== 'all') txns = txns.filter((t) => t.segment_key === selectedSegment);
     return txns;
   }, [allTransactions, selectedSegment, interval]);
@@ -144,8 +156,8 @@ export default function IncomeOverviewPage() {
 
   const lønSources = useMemo(() => {
     const lønTxns = allTransactions.filter((t) => t.amount > 0 && t.segment_key === 'salary');
-    const cutoff = getCutoff(interval);
-    const filtered = cutoff ? lønTxns.filter((t) => t.date >= cutoff) : lønTxns;
+    const { from, to } = getCutoff(interval);
+    const filtered = lønTxns.filter((t) => (!from || t.date >= from) && (!to || t.date < to));
     const byName = new Map<
       string,
       { total: number; count: number; latestDate: string; latestAmount: number }
@@ -206,6 +218,8 @@ export default function IncomeOverviewPage() {
         <Select
           size="xs"
           data={[
+            { value: 'current_month', label: 'Denne måned' },
+            { value: 'last_month', label: 'Forrige måned' },
             { value: '3m', label: 'Seneste 3 mdr.' },
             { value: '6m', label: 'Seneste 6 mdr.' },
             { value: '12m', label: 'Seneste 12 mdr.' },

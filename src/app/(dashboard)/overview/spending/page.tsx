@@ -42,19 +42,30 @@ const formatDKK = (n: number) =>
     maximumFractionDigits: 0,
   }).format(n);
 
-const getCutoff = (interval: string): string | null => {
+const ms = (year: number, month: number): string => {
+  const d = new Date(year, month, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`;
+};
+
+const getCutoff = (interval: string): { from: string | null; to: string | null } => {
   const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth();
   switch (interval) {
     case '3m':
-      return new Date(now.getFullYear(), now.getMonth() - 3, 1).toISOString().slice(0, 10);
+      return { from: ms(y, m - 2), to: null };
     case '6m':
-      return new Date(now.getFullYear(), now.getMonth() - 6, 1).toISOString().slice(0, 10);
+      return { from: ms(y, m - 5), to: null };
     case '12m':
-      return new Date(now.getFullYear(), now.getMonth() - 12, 1).toISOString().slice(0, 10);
+      return { from: ms(y, m - 11), to: null };
     case 'ytd':
-      return `${now.getFullYear()}-01-01`;
+      return { from: `${y}-01-01`, to: null };
+    case 'current_month':
+      return { from: ms(y, m), to: null };
+    case 'last_month':
+      return { from: ms(y, m - 1), to: ms(y, m) };
     default:
-      return null;
+      return { from: null, to: null };
   }
 };
 
@@ -194,25 +205,25 @@ export default function SpendingOverviewPage() {
   const expenses = useMemo(() => {
     let txns = allTransactions.filter(
       (t) =>
-        t.amount < 0 &&
         t.category_key &&
         t.category_key !== 'uncategorized' &&
         t.category_key !== 'internal' &&
         t.category_key !== 'income'
     );
-    const cutoff = getCutoff(interval);
-    if (cutoff) txns = txns.filter((t) => t.date >= cutoff);
+    const { from, to } = getCutoff(interval);
+    if (from) txns = txns.filter((t) => t.date >= from);
+    if (to) txns = txns.filter((t) => t.date < to);
     if (selectedCategory !== 'all') txns = txns.filter((t) => t.category_key === selectedCategory);
     if (selectedSegment !== 'all') txns = txns.filter((t) => t.segment_key === selectedSegment);
     return txns;
   }, [allTransactions, selectedCategory, selectedSegment, interval]);
 
   const { total, monthly, slopePerMonth, lastMonth } = useMemo(() => {
-    const total = expenses.reduce((s, t) => s + Math.abs(t.amount), 0);
+    const total = expenses.reduce((s, t) => s - t.amount, 0);
     const byMonth = new Map<string, number>();
     for (const t of expenses) {
       const m = t.date.slice(0, 7);
-      byMonth.set(m, (byMonth.get(m) ?? 0) + Math.abs(t.amount));
+      byMonth.set(m, (byMonth.get(m) ?? 0) - t.amount);
     }
     const months = [...byMonth.keys()].sort();
     const monthly = months.length > 0 ? total / months.length : 0;
@@ -240,10 +251,10 @@ export default function SpendingOverviewPage() {
     );
     const billsTotal = expenses
       .filter((t) => subTxnIds.has(t.id))
-      .reduce((s, t) => s + Math.abs(t.amount), 0);
+      .reduce((s, t) => s - t.amount, 0);
     const consumptionTotal = expenses
       .filter((t) => !subTxnIds.has(t.id))
-      .reduce((s, t) => s + Math.abs(t.amount), 0);
+      .reduce((s, t) => s - t.amount, 0);
     return { billsTotal, consumptionTotal };
   }, [expenses, allTransactions, matchers]);
 
@@ -252,7 +263,7 @@ export default function SpendingOverviewPage() {
     for (const t of expenses) {
       const key = t.company_name ?? t.description ?? 'Ukendt';
       const cur = byName.get(key) ?? { total: 0, count: 0 };
-      byName.set(key, { total: cur.total + Math.abs(t.amount), count: cur.count + 1 });
+      byName.set(key, { total: cur.total - t.amount, count: cur.count + 1 });
     }
     return [...byName.entries()]
       .sort((a, b) => b[1].count - a[1].count)
@@ -329,6 +340,8 @@ export default function SpendingOverviewPage() {
           <Select
             size="xs"
             data={[
+              { value: 'current_month', label: 'Denne måned' },
+              { value: 'last_month', label: 'Forrige måned' },
               { value: '3m', label: 'Seneste 3 mdr.' },
               { value: '6m', label: 'Seneste 6 mdr.' },
               { value: '12m', label: 'Seneste 12 mdr.' },
