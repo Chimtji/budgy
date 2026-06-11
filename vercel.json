@@ -3,16 +3,20 @@
   "outputDirectory": ".next",
   "env": {
     "SHARE_BASE_URL": {
-      "description": "Base URL for the sharing feature (e.g., https://budgy.vercel.app). Used when creating shareable snapshots."
+      "description": "Base URL for the sharing feature (e.g., https://budgy.vercel.app). Used when creating shareable snapshots.",
+      "value": ""
     },
     "SHARE_API_SECRET": {
-      "description": "Optional secret key for securing the snapshot sharing API endpoint. If set, requests to /api/share must include Authorization: Bearer <secret> header."
+      "description": "Optional secret key for securing the snapshot sharing API endpoint. If set, requests to /api/share must include Authorization: Bearer <secret> header.",
+      "value": ""
     },
     "BLOB_STORE_ID": {
-      "description": "Vercel Blob storage ID for the snapshots store. Create a private blob store in Vercel dashboard."
+      "description": "Vercel Blob storage ID for the snapshots store. Create a private blob store in Vercel dashboard.",
+      "value": ""
     },
     "BLOB_READ_WRITE_TOKEN": {
-      "description": "Vercel Blob read/write token for authentication. Generate this in Vercel dashboard."
+      "description": "Vercel Blob read/write token for authentication. Generate this in Vercel dashboard.",
+      "value": ""
     }
   }
 }
