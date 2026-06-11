@@ -45,12 +45,24 @@ export const updateShareInList = async (
 
 export const getShareMetadata = async (shareId: string): Promise<TShareMetadata | null> => {
   try {
+    console.log('[getShareMetadata] Fetching metadata for:', shareId);
     const { blobs } = await list({ prefix: `share-meta:${shareId}` });
-    if (blobs.length === 0) return null;
+    console.log('[getShareMetadata] Found blobs:', blobs.length);
+    if (blobs.length === 0) {
+      console.log('[getShareMetadata] No blobs found - returning null');
+      return null;
+    }
     const content = await fetchBlobContent(blobs[0].url);
-    if (!content) return null;
-    return JSON.parse(content);
-  } catch {
+    console.log('[getShareMetadata] Content:', content);
+    if (!content) {
+      console.log('[getShareMetadata] No content - returning null');
+      return null;
+    }
+    const parsed = JSON.parse(content);
+    console.log('[getShareMetadata] Parsed metadata:', parsed);
+    return parsed;
+  } catch (error) {
+    console.error('[getShareMetadata] Error:', error);
     return null;
   }
 };
