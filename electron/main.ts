@@ -133,6 +133,10 @@ async function startNextServer(): Promise<void> {
   // Set DB_PATH before Next.js loads any server modules so better-sqlite3 uses the right file
   process.env.DB_PATH = getDbPath();
 
+  // Set SHARE_BASE_URL to the web Vercel version — Electron shares are always for the web app
+  // Users can modify this to their custom domain if needed
+  process.env.SHARE_BASE_URL = 'https://budgy-sigma.vercel.app';
+
   // Run Next.js inside Electron's own Node process — this ensures better-sqlite3 ABI matches
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const next = require('next');
