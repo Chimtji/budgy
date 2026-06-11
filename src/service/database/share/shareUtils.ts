@@ -63,19 +63,32 @@ export const putShareMetadata = async (
 };
 
 export const isShareValid = async (shareId: string): Promise<boolean> => {
+  console.log('[isShareValid] Checking shareId:', shareId);
+  
   // Check if metadata blob exists
   const metadata = await getShareMetadata(shareId);
-  if (!metadata) return false;
+  console.log('[isShareValid] metadata:', metadata);
+  if (!metadata) {
+    console.log('[isShareValid] No metadata found - returning false');
+    return false;
+  }
   
   // Check if revoked
-  if (metadata.status === 'revoked') return false;
+  if (metadata.status === 'revoked') {
+    console.log('[isShareValid] Status is revoked - returning false');
+    return false;
+  }
   
   // Check expiration
   if (metadata.expiresAt) {
     const expiresAt = new Date(metadata.expiresAt);
-    if (new Date() > expiresAt) return false;
+    if (new Date() > expiresAt) {
+      console.log('[isShareValid] Share expired - returning false');
+      return false;
+    }
   }
   
+  console.log('[isShareValid] Share is valid - returning true');
   return true;
 };
 
