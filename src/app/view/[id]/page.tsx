@@ -1,6 +1,8 @@
 import { notFound } from 'next/navigation';
-import { list } from '@vercel/blob';
+import { get, list } from '@vercel/blob';
 import type { TSnapshot } from '@/service/database/share/createSnapshot';
+import { getShareMetadata, isShareValid } from '@/service/database/share/shareUtils';
+import { PasswordProtected } from './PasswordProtected';
 import { SharedView } from './SharedView';
 
 type TProps = {
@@ -9,6 +11,12 @@ type TProps = {
 
 const SharedViewPage = async ({ params }: TProps) => {
   const { id } = await params;
+
+  const isValid = await isShareValid(id);
+  if (!isValid) notFound();
+
+  const metadata = await getShareMetadata(id);
+  const isPasswordProtected = !!metadata?.passwordHash;
 
   let snapshot: TSnapshot | null = null;
   try {
@@ -23,6 +31,10 @@ const SharedViewPage = async ({ params }: TProps) => {
   }
 
   if (!snapshot) notFound();
+
+  if (isPasswordProtected) {
+    return <PasswordProtected shareId={id} snapshot={snapshot} />;
+  }
 
   return <SharedView snapshot={snapshot} />;
 };

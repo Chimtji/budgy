@@ -1,8 +1,12 @@
 'use server';
 
+import { randomUUID } from 'crypto';
+import { hash } from 'bcryptjs';
+import { put } from '@vercel/blob';
 import type { TServerResponse } from '@/service';
 import { isAuthenticated } from '@/service/database/auth/isAuthenticated';
 import { sqlClient } from '@/service/database/auth/server';
+import { addShareToList, putShareMetadata } from './shareUtils';
 
 export type TSnapshot = {
   categories: Record<string, unknown>[];
@@ -15,7 +19,10 @@ export type TSnapshot = {
 
 const USER_ID = 'default';
 
-export const createSnapshot = async (): Promise<TServerResponse<{ url: string }>> => {
+export const createSnapshot = async (
+  password?: string,
+  durationDays?: number
+): Promise<TServerResponse<{ url: string }>> => {
   const auth = await isAuthenticated();
   if (!auth.success) return { status: 401, success: false, error: 'Ikke godkendt' };
 
@@ -37,20 +44,34 @@ export const createSnapshot = async (): Promise<TServerResponse<{ url: string }>
     subscriptions,
   };
 
-  const baseUrl = 'https://budgy-sigma.vercel.app';
+  const baseUrl = process.env.SHARE_BASE_URL || 'https://budgy-sigma.vercel.app';
+  const shareId = randomUUID();
 
-  const response = await fetch(`${baseUrl}/api/share`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(snapshot),
+  // Upload snapshot
+  await put(`snapshot:${shareId}`, JSON.stringify(snapshot), { access: 'public' });
+
+  // Create metadata
+  const metadata: Record<string, string> = {};
+  if (password) {
+    metadata.passwordHash = await hash(password, 10);
+  }
+  if (durationDays) {
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + durationDays);
+    metadata.expiresAt = expiresAt.toISOString();
+  }
+  await putShareMetadata(shareId, metadata);
+
+  // Add to share list
+  await addShareToList({
+    shareId,
+    createdAt: new Date().toISOString(),
+    expiresAt: metadata.expiresAt || null,
+    passwordProtected: !!password,
+    status: 'active',
   });
 
-  if (!response.ok) {
-    return { status: 500, success: false, error: 'Kunne ikke uploade snapshot' };
-  }
-
-  const { id } = await response.json();
-  const url = `${baseUrl}/view/${id}`;
+  const url = `${baseUrl}/view/${shareId}`;
 
   return { status: 200, success: true, data: { url } };
 };

@@ -11,6 +11,7 @@ import {
   IconRepeat,
   IconRobot,
   IconTarget,
+  IconShare2,
 } from '@tabler/icons-react';
 import { Box, Group, Stack, Text, Title, Tooltip } from '@mantine/core';
 import { NotificationBell } from './NotificationBell';
@@ -35,6 +36,7 @@ const navItems = [
   { href: '/subscriptions/list', label: 'Regninger', icon: IconRepeat },
   { href: '/goals', label: 'Budgetmål', icon: IconTarget },
   { href: '/rules', label: 'Autoregler', icon: IconRobot },
+  { href: '/share-history', label: 'Mine delinger', icon: IconShare2 },
 ];
 
 export const Navbar = () => {
