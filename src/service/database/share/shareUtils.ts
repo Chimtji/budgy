@@ -59,7 +59,7 @@ export const putShareMetadata = async (
   shareId: string,
   metadata: TShareMetadata
 ): Promise<void> => {
-  await put(`share-meta:${shareId}`, JSON.stringify(metadata), { access: 'private', addRandomSuffix: true });
+  await put(`share-meta:${shareId}`, JSON.stringify(metadata), { access: 'private', allowOverwrite: true });
 };
 
 export const isShareValid = async (shareId: string): Promise<boolean> => {
