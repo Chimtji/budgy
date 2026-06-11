@@ -39,13 +39,9 @@ export const createSnapshot = async (): Promise<TServerResponse<{ url: string }>
 
   const baseUrl = 'https://budgy-sigma.vercel.app';
 
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-  const secret = process.env.SHARE_API_SECRET;
-  if (secret) headers['Authorization'] = `Bearer ${secret}`;
-
   const response = await fetch(`${baseUrl}/api/share`, {
     method: 'POST',
-    headers,
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(snapshot),
   });
 

@@ -2,10 +2,6 @@
   "buildCommand": "yarn build",
   "outputDirectory": ".next",
   "env": {
-    "SHARE_API_SECRET": {
-      "description": "Optional secret key for securing the snapshot sharing API endpoint. If set, requests to /api/share must include Authorization: Bearer <secret> header.",
-      "value": ""
-    },
     "BLOB_STORE_ID": {
       "description": "Vercel Blob storage ID for the snapshots store. Create a private blob store in Vercel dashboard.",
       "value": ""
