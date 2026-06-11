@@ -137,6 +137,11 @@ async function startNextServer(): Promise<void> {
   // Users can modify this to their custom domain if needed
   process.env.SHARE_BASE_URL = 'https://budgy-sigma.vercel.app';
 
+  // Set Blob credentials for Vercel Blob storage (needed for snapshot sharing)
+  // Get token from: Vercel dashboard → Storage → Blob → your store → tokens
+  process.env.BLOB_STORE_ID = 'store_ORyisB8rHxtnDDWA';
+  process.env.BLOB_READ_WRITE_TOKEN = process.env.BLOB_READ_WRITE_TOKEN || '';
+
   // Run Next.js inside Electron's own Node process — this ensures better-sqlite3 ABI matches
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const next = require('next');

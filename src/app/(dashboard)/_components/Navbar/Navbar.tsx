@@ -10,8 +10,8 @@ import {
   IconReceipt,
   IconRepeat,
   IconRobot,
-  IconTarget,
   IconShare2,
+  IconTarget,
 } from '@tabler/icons-react';
 import { Box, Group, Stack, Text, Title, Tooltip } from '@mantine/core';
 import { NotificationBell } from './NotificationBell';

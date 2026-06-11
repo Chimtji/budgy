@@ -23,55 +23,68 @@ export const createSnapshot = async (
   password?: string,
   durationDays?: number
 ): Promise<TServerResponse<{ url: string }>> => {
-  const auth = await isAuthenticated();
-  if (!auth.success) return { status: 401, success: false, error: 'Ikke godkendt' };
+  try {
+    const auth = await isAuthenticated();
+    if (!auth.success) return { status: 401, success: false, error: 'Ikke godkendt' };
 
-  const [categories, segments, companies, transactions, goals, subscriptions] = await Promise.all([
-    sqlClient`SELECT * FROM categories WHERE user_id = ${USER_ID}`,
-    sqlClient`SELECT * FROM segments WHERE user_id = ${USER_ID}`,
-    sqlClient`SELECT * FROM companies WHERE user_id = ${USER_ID}`,
-    sqlClient`SELECT * FROM transactions WHERE user_id = ${USER_ID} AND is_archived = 0 ORDER BY date DESC`,
-    sqlClient`SELECT * FROM goals WHERE user_id = ${USER_ID}`,
-    sqlClient`SELECT * FROM subscription_matchers WHERE user_id = ${USER_ID}`,
-  ]);
+    const [categories, segments, companies, transactions, goals, subscriptions] = await Promise.all(
+      [
+        sqlClient`SELECT * FROM categories WHERE user_id = ${USER_ID}`,
+        sqlClient`SELECT * FROM segments WHERE user_id = ${USER_ID}`,
+        sqlClient`SELECT * FROM companies WHERE user_id = ${USER_ID}`,
+        sqlClient`SELECT * FROM transactions WHERE user_id = ${USER_ID} AND archived = 0 ORDER BY date DESC`,
+        sqlClient`SELECT * FROM goals WHERE user_id = ${USER_ID}`,
+        sqlClient`SELECT * FROM subscription_matchers WHERE user_id = ${USER_ID}`,
+      ]
+    );
 
-  const snapshot: TSnapshot = {
-    categories,
-    segments,
-    companies,
-    transactions,
-    goals,
-    subscriptions,
-  };
+    const snapshot: TSnapshot = {
+      categories,
+      segments,
+      companies,
+      transactions,
+      goals,
+      subscriptions,
+    };
 
-  const baseUrl = process.env.SHARE_BASE_URL;
-  const shareId = randomUUID();
+    const baseUrl = process.env.SHARE_BASE_URL;
+    if (!baseUrl) {
+      console.error('SHARE_BASE_URL not set');
+      return { status: 500, success: false, error: 'Delekonfiguration mangler' };
+    }
 
-  // Upload snapshot
-  await put(`snapshot:${shareId}`, JSON.stringify(snapshot), { access: 'public' });
+    const shareId = randomUUID();
 
-  // Create metadata
-  const metadata: Record<string, string> = {};
-  if (password) {
-    metadata.passwordHash = await hash(password, 10);
+    // Upload snapshot
+    await put(`snapshot:${shareId}`, JSON.stringify(snapshot), { access: 'private' });
+
+    // Create metadata
+    const metadata: Record<string, string> = {};
+    if (password) {
+      metadata.passwordHash = await hash(password, 10);
+    }
+    if (durationDays) {
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + durationDays);
+      metadata.expiresAt = expiresAt.toISOString();
+    }
+    await putShareMetadata(shareId, metadata);
+
+    // Add to share list
+    await addShareToList({
+      shareId,
+      createdAt: new Date().toISOString(),
+      expiresAt: metadata.expiresAt || null,
+      passwordProtected: !!password,
+      status: 'active',
+    });
+
+    const url = `${baseUrl}/view/${shareId}`;
+
+    return { status: 200, success: true, data: { url } };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Ukendt fejl';
+    console.error('createSnapshot error:', err);
+    return { status: 500, success: false, error: `Kunne ikke oprette deling: ${message}` };
   }
-  if (durationDays) {
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + durationDays);
-    metadata.expiresAt = expiresAt.toISOString();
-  }
-  await putShareMetadata(shareId, metadata);
-
-  // Add to share list
-  await addShareToList({
-    shareId,
-    createdAt: new Date().toISOString(),
-    expiresAt: metadata.expiresAt || null,
-    passwordProtected: !!password,
-    status: 'active',
-  });
-
-  const url = `${baseUrl}/view/${shareId}`;
-
-  return { status: 200, success: true, data: { url } };
 };

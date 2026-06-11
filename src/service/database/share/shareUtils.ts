@@ -36,7 +36,7 @@ export const updateShareInList = async (
   updates: Partial<TShareListEntry>
 ): Promise<void> => {
   const list_data = await getShareList();
-  const index = list_data.findIndex(s => s.shareId === shareId);
+  const index = list_data.findIndex((s) => s.shareId === shareId);
   if (index >= 0) {
     list_data[index] = { ...list_data[index], ...updates };
     await put(`share-list:${USERID}`, JSON.stringify(list_data), { access: 'private' });
@@ -64,7 +64,7 @@ export const putShareMetadata = async (
 
 export const isShareValid = async (shareId: string): Promise<boolean> => {
   const list_data = await getShareList();
-  const entry = list_data.find(s => s.shareId === shareId);
+  const entry = list_data.find((s) => s.shareId === shareId);
   if (!entry) return false;
   if (entry.status === 'revoked') return false;
   if (entry.expiresAt) {

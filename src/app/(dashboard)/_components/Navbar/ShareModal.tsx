@@ -115,7 +115,7 @@ export const ShareModal = ({ opened, close }: { opened: boolean; close: () => vo
                 placeholder="7"
                 min={1}
                 value={durationDays ?? undefined}
-                onChange={val => setDurationDays(typeof val === 'number' ? val : null)}
+                onChange={(val) => setDurationDays(typeof val === 'number' ? val : null)}
               />
             )}
           </Stack>
