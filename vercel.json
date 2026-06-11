@@ -1,10 +1,4 @@
 {
   "buildCommand": "yarn build",
-  "outputDirectory": ".next",
-  "env": {
-    "SHARE_BASE_URL": {
-      "description": "Base URL for the sharing feature (e.g., https://budgy.vercel.app). Used when creating shareable snapshots.",
-      "value": ""
-    }
-  }
+  "outputDirectory": ".next"
 }

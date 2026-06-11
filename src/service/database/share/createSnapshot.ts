@@ -1,8 +1,8 @@
 'use server';
 
 import { randomUUID } from 'crypto';
-import { hash } from 'bcryptjs';
 import { put } from '@vercel/blob';
+import { hash } from 'bcryptjs';
 import type { TServerResponse } from '@/service';
 import { isAuthenticated } from '@/service/database/auth/isAuthenticated';
 import { sqlClient } from '@/service/database/auth/server';
@@ -44,7 +44,7 @@ export const createSnapshot = async (
     subscriptions,
   };
 
-  const baseUrl = process.env.SHARE_BASE_URL || 'https://budgy-sigma.vercel.app';
+  const baseUrl = process.env.SHARE_BASE_URL;
   const shareId = randomUUID();
 
   // Upload snapshot
