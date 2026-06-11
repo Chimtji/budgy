@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
-import { getStore } from '@netlify/blobs';
+import { put } from '@vercel/blob';
 
 export const POST = async (req: NextRequest) => {
   const secret = process.env.SHARE_API_SECRET;
@@ -13,9 +13,8 @@ export const POST = async (req: NextRequest) => {
 
   try {
     const snapshot = await req.json();
-    const store = getStore('snapshots');
     const id = randomUUID();
-    await store.setJSON(id, snapshot);
+    await put(`snapshot:${id}`, JSON.stringify(snapshot), { access: 'public' });
     return NextResponse.json({ id });
   } catch {
     return NextResponse.json({ error: 'Kunne ikke gemme snapshot' }, { status: 500 });

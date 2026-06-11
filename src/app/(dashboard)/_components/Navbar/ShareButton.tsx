@@ -61,7 +61,7 @@ export const ShareButton = () => {
             </CopyButton>
           </Group>
           <Text size="xs" c="dimmed">
-            Linket er gyldigt i ~30 dage uden aktivitet (jsonblob.com).
+            Linket er aktivt så længe du har en aktiv konto.
           </Text>
         </Stack>
       </Modal>

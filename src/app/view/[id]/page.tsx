@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { getStore } from '@netlify/blobs';
+import { list } from '@vercel/blob';
 import type { TSnapshot } from '@/service/database/share/createSnapshot';
 import { SharedView } from './SharedView';
 
@@ -12,8 +12,12 @@ const SharedViewPage = async ({ params }: TProps) => {
 
   let snapshot: TSnapshot | null = null;
   try {
-    const store = getStore('snapshots');
-    snapshot = await store.get(id, { type: 'json' });
+    const { blobs } = await list({ prefix: `snapshot:${id}` });
+    if (blobs.length > 0) {
+      const response = await fetch(blobs[0].url);
+      const text = await response.text();
+      snapshot = JSON.parse(text) as TSnapshot;
+    }
   } catch {
     snapshot = null;
   }
