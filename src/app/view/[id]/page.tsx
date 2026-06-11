@@ -28,7 +28,11 @@ const SharedViewPage = async ({ params }: TProps) => {
   try {
     console.log('SharedViewPage: Fetching snapshot:', `snapshot:${id}`);
     const { blobs } = await list({ prefix: `snapshot:${id}` });
-    console.log('SharedViewPage: Found blobs:', blobs.length, blobs.map(b => b.pathname));
+    console.log(
+      'SharedViewPage: Found blobs:',
+      blobs.length,
+      blobs.map((b) => b.pathname)
+    );
     if (blobs.length > 0) {
       const response = await fetch(blobs[0].url);
       const text = await response.text();
