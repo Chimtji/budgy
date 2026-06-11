@@ -28,7 +28,7 @@ export const getShareList = async (): Promise<TShareList> => {
 export const addShareToList = async (entry: TShareListEntry): Promise<void> => {
   const list_data = await getShareList();
   list_data.push(entry);
-  await put(`share-list:${USERID}`, JSON.stringify(list_data), { access: 'private' });
+  await put(`share-list:${USERID}`, JSON.stringify(list_data), { access: 'private', allowOverwrite: true });
 };
 
 export const updateShareInList = async (
@@ -39,7 +39,7 @@ export const updateShareInList = async (
   const index = list_data.findIndex((s) => s.shareId === shareId);
   if (index >= 0) {
     list_data[index] = { ...list_data[index], ...updates };
-    await put(`share-list:${USERID}`, JSON.stringify(list_data), { access: 'private' });
+    await put(`share-list:${USERID}`, JSON.stringify(list_data), { access: 'private', allowOverwrite: true });
   }
 };
 
@@ -59,7 +59,7 @@ export const putShareMetadata = async (
   shareId: string,
   metadata: TShareMetadata
 ): Promise<void> => {
-  await put(`share-meta:${shareId}`, JSON.stringify(metadata), { access: 'private' });
+  await put(`share-meta:${shareId}`, JSON.stringify(metadata), { access: 'private', addRandomSuffix: true });
 };
 
 export const isShareValid = async (shareId: string): Promise<boolean> => {

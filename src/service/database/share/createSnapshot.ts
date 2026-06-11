@@ -55,8 +55,8 @@ export const createSnapshot = async (
 
     const shareId = randomUUID();
 
-    // Upload snapshot
-    await put(`snapshot:${shareId}`, JSON.stringify(snapshot), { access: 'private' });
+    // Upload snapshot with unique filename to avoid conflicts
+    await put(`snapshot:${shareId}`, JSON.stringify(snapshot), { access: 'private', addRandomSuffix: true });
 
     // Create metadata
     const metadata: Record<string, string> = {};
