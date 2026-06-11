@@ -1,6 +1,7 @@
 export type TShareMetadata = {
   passwordHash?: string;
   expiresAt?: string;
+  status?: 'active' | 'revoked';
 };
 
 export type TShareListEntry = {

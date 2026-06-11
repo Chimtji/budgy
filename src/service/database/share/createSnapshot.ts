@@ -7,6 +7,7 @@ import type { TServerResponse } from '@/service';
 import { isAuthenticated } from '@/service/database/auth/isAuthenticated';
 import { sqlClient } from '@/service/database/auth/server';
 import { addShareToList, putShareMetadata } from './shareUtils';
+import type { TShareMetadata } from './types';
 
 export type TSnapshot = {
   categories: Record<string, unknown>[];
@@ -59,7 +60,9 @@ export const createSnapshot = async (
     await put(`snapshot:${shareId}`, JSON.stringify(snapshot), { access: 'private', allowOverwrite: true });
 
     // Create metadata
-    const metadata: Record<string, string> = {};
+    const metadata: TShareMetadata = {
+      status: 'active',
+    };
     if (password) {
       metadata.passwordHash = await hash(password, 10);
     }
