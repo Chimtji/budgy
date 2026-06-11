@@ -1,7 +1,7 @@
 {
   "buildCommand": "yarn build",
   "outputDirectory": ".next",
-  "env": 
+  "env": {
     "SHARE_API_SECRET": {
       "description": "Optional secret key for securing the snapshot sharing API endpoint. If set, requests to /api/share must include Authorization: Bearer <secret> header.",
       "value": ""
