@@ -37,10 +37,7 @@ export const createSnapshot = async (): Promise<TServerResponse<{ url: string }>
     subscriptions,
   };
 
-  const baseUrl = process.env.SHARE_BASE_URL;
-  if (!baseUrl) {
-    return { status: 500, success: false, error: 'SHARE_BASE_URL er ikke konfigureret' };
-  }
+  const baseUrl = 'https://budgy-sigma.vercel.app';
 
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   const secret = process.env.SHARE_API_SECRET;
