@@ -5,10 +5,19 @@ const USERID = 'default';
 
 const fetchBlobContent = async (url: string): Promise<string | null> => {
   try {
+    console.log('[fetchBlobContent] Fetching URL:', url);
     const response = await fetch(url);
-    if (!response.ok) return null;
-    return response.text();
-  } catch {
+    console.log('[fetchBlobContent] Response status:', response.status, response.ok);
+    if (!response.ok) {
+      const text = await response.text();
+      console.log('[fetchBlobContent] Error response:', text);
+      return null;
+    }
+    const content = await response.text();
+    console.log('[fetchBlobContent] Content length:', content.length);
+    return content;
+  } catch (error) {
+    console.error('[fetchBlobContent] Error:', error);
     return null;
   }
 };
@@ -52,7 +61,9 @@ export const getShareMetadata = async (shareId: string): Promise<TShareMetadata 
       console.log('[getShareMetadata] No blobs found - returning null');
       return null;
     }
-    const content = await fetchBlobContent(blobs[0].url);
+    console.log('[getShareMetadata] Blob URL:', blobs[0].url);
+    console.log('[getShareMetadata] Blob downloadUrl:', blobs[0].downloadUrl);
+    const content = await fetchBlobContent(blobs[0].downloadUrl);
     console.log('[getShareMetadata] Content:', content);
     if (!content) {
       console.log('[getShareMetadata] No content - returning null');
