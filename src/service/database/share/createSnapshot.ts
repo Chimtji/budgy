@@ -57,7 +57,10 @@ export const createSnapshot = async (
     const shareId = randomUUID();
 
     // Upload snapshot with overwrite allowed (safe since shareId is unique)
-    await put(`snapshot:${shareId}`, JSON.stringify(snapshot), { access: 'private', allowOverwrite: true });
+    await put(`snapshot:${shareId}`, JSON.stringify(snapshot), { 
+      access: 'public',
+      allowOverwrite: true 
+    });
 
     // Create metadata
     const metadata: TShareMetadata = {
