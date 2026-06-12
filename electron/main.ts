@@ -139,8 +139,9 @@ async function startNextServer(): Promise<void> {
 
   // Set Blob credentials for Vercel Blob storage (needed for snapshot sharing)
   // Get token from: Vercel dashboard → Storage → Blob → your store → tokens
-  process.env.BLOB_STORE_ID = 'store_ORyisB8rHxtnDDWA';
-  process.env.BLOB_READ_WRITE_TOKEN = 'vercel_blob_rw_ORyisB8rHxtnDDWA_QVp9uE6jRsmYpE6yyAq2SFsgZTxfPf';
+  process.env.BLOB_STORE_ID = 'store_6nAuw4BXbEg4Y9Nn';
+  process.env.BLOB_READ_WRITE_TOKEN =
+    'vercel_blob_rw_6nAuw4BXbEg4Y9Nn_N9OFh5JK2XFTkvCiwM2ZuhmujrI01g';
 
   // Run Next.js inside Electron's own Node process — this ensures better-sqlite3 ABI matches
   // eslint-disable-next-line @typescript-eslint/no-require-imports
