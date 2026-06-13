@@ -1,8 +1,8 @@
 'use client';
 
 import { Title } from '@mantine/core';
-import { useViewSnapshot } from '../_components/ViewSnapshotProvider';
 import { TransactionsTab } from '../_components/TransactionsTab';
+import { useViewSnapshot } from '../_components/ViewSnapshotProvider';
 
 const SharedTransactionsPage = () => {
   const { transactions, categories } = useViewSnapshot();

@@ -1,12 +1,12 @@
-import { notFound } from 'next/navigation';
 import { cookies } from 'next/headers';
+import { notFound } from 'next/navigation';
 import { Box } from '@mantine/core';
 import dashboardClasses from '@/app/(dashboard)/layout.module.css';
 import { getSnapshotByShareId } from '@/service/database/share/getSnapshotByShareId';
 import { getShareMetadata, isShareValid } from '@/service/database/share/shareUtils';
-import { PasswordProtected } from './PasswordProtected';
 import { ViewNavbar } from './_components/ViewNavbar';
 import { ViewSnapshotProvider } from './_components/ViewSnapshotProvider';
+import { PasswordProtected } from './PasswordProtected';
 
 type TProps = {
   children: React.ReactNode;
