@@ -153,7 +153,6 @@ const CompanyForm: React.FC<TProps> = ({
                 value={categoryKey}
                 onChange={handleCategoryChange}
                 clearable
-                description="Bruges ved auto-matching"
               />
               <Select
                 label="Standard segment"
