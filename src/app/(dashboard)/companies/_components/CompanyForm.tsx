@@ -110,7 +110,7 @@ const CompanyForm: React.FC<TProps> = ({
   const [categoryKey, setCategoryKey] = useState<string | null>(company?.category_key ?? null);
   const [segmentKey, setSegmentKey] = useState<string | null>(company?.segment_key ?? null);
   const fallbackTransaction =
-    typeof window !== 'undefined' ? window.__budgyPendingCompanyTransaction ?? null : null;
+    typeof window !== 'undefined' ? (window.__budgyPendingCompanyTransaction ?? null) : null;
   const activeTransaction = transaction ?? fallbackTransaction ?? transactionContext ?? null;
 
   useEffect(() => {
@@ -167,7 +167,12 @@ const CompanyForm: React.FC<TProps> = ({
   };
 
   return (
-    <Modal opened onClose={handleClose} title={company ? 'Rediger virksomhed' : 'Ny virksomhed'} size={activeTransaction ? 'xl' : 'lg'}>
+    <Modal
+      opened
+      onClose={handleClose}
+      title={company ? 'Rediger virksomhed' : 'Ny virksomhed'}
+      size={activeTransaction ? 'xl' : 'lg'}
+    >
       <Group align="flex-start" wrap="nowrap" gap="xl">
         <Box style={{ flex: 1, minWidth: 0 }}>
           <Stack gap="md">
@@ -232,7 +237,13 @@ const CompanyForm: React.FC<TProps> = ({
             <Divider orientation="vertical" />
             <Paper withBorder p="md" style={{ width: 320, flexShrink: 0 }}>
               <Stack gap="sm">
-                <Text size="xs" c="dimmed" tt="uppercase" fw={700} style={{ letterSpacing: '0.06em' }}>
+                <Text
+                  size="xs"
+                  c="dimmed"
+                  tt="uppercase"
+                  fw={700}
+                  style={{ letterSpacing: '0.06em' }}
+                >
                   Transaktion
                 </Text>
 
@@ -249,7 +260,9 @@ const CompanyForm: React.FC<TProps> = ({
                   <Text size="xs" c="dimmed" mb={4}>
                     Dato
                   </Text>
-                  <Text size="sm">{new Date(activeTransaction.date).toLocaleDateString('da-DK')}</Text>
+                  <Text size="sm">
+                    {new Date(activeTransaction.date).toLocaleDateString('da-DK')}
+                  </Text>
                 </div>
 
                 <div>
