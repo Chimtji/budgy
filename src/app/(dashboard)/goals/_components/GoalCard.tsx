@@ -3,6 +3,7 @@
 import * as TablerIcons from '@tabler/icons-react';
 import { IconPencil, IconTarget, IconTrash } from '@tabler/icons-react';
 import { ActionIcon, Badge, Box, Group, Paper, Progress, Text, ThemeIcon } from '@mantine/core';
+import { useAppStore } from '@/stores/app/appStore';
 
 const formatDKK = (n: number) =>
   new Intl.NumberFormat('da-DK', {
@@ -57,6 +58,7 @@ export default function GoalCard({
   onEdit,
   onDelete,
 }: TGoalCardProps) {
+  const isReadOnly = useAppStore((s) => s.isReadOnly);
   const hasLimit = amountLimit !== null;
   const pct = hasLimit && amountLimit > 0 ? Math.min((spent / amountLimit) * 100, 100) : 0;
   const over = hasLimit && spent > amountLimit;
@@ -72,14 +74,16 @@ export default function GoalCard({
         <Text fw={700} size="sm">
           {name}
         </Text>
-        <Group gap={4}>
-          <ActionIcon variant="subtle" color="gray" size="sm" onClick={onEdit}>
-            <IconPencil size={14} stroke={1.5} />
-          </ActionIcon>
-          <ActionIcon variant="subtle" color="red" size="sm" onClick={onDelete}>
-            <IconTrash size={14} stroke={1.5} />
-          </ActionIcon>
-        </Group>
+        {!isReadOnly && (
+          <Group gap={4}>
+            <ActionIcon variant="subtle" color="gray" size="sm" onClick={onEdit}>
+              <IconPencil size={14} stroke={1.5} />
+            </ActionIcon>
+            <ActionIcon variant="subtle" color="red" size="sm" onClick={onDelete}>
+              <IconTrash size={14} stroke={1.5} />
+            </ActionIcon>
+          </Group>
+        )}
       </Group>
 
       <Group gap="xs" mb="sm">

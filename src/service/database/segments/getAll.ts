@@ -3,6 +3,7 @@
 import type { TServerResponse } from '@/service';
 import { isAuthenticated } from '@/service/database/auth/isAuthenticated';
 import { sqlClient } from '@/service/database/auth/server';
+import { getActiveShareSnapshot } from '@/service/database/share/shareContext';
 import { segmentsSnapshot } from '@/service/database/snapshot';
 
 export type TSegment = {
@@ -14,6 +15,11 @@ export type TSegment = {
 };
 
 export const getAllSegments = async (): Promise<TServerResponse<TSegment[]>> => {
+  const shareSnapshot = await getActiveShareSnapshot();
+  if (shareSnapshot) {
+    return { status: 200, success: true, data: shareSnapshot.segments as TSegment[] };
+  }
+
   if (process.env.READ_ONLY === 'true') {
     return { status: 200, success: true, data: segmentsSnapshot as TSegment[] };
   }

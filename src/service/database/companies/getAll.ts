@@ -3,6 +3,7 @@
 import type { TServerResponse } from '@/service';
 import { isAuthenticated } from '@/service/database/auth/isAuthenticated';
 import { sqlClient } from '@/service/database/auth/server';
+import { getActiveShareSnapshot } from '@/service/database/share/shareContext';
 
 export type TCompany = {
   id: string;
@@ -14,6 +15,26 @@ export type TCompany = {
 };
 
 export const getAllCompanies = async (): Promise<TServerResponse<TCompany[]>> => {
+  const shareSnapshot = await getActiveShareSnapshot();
+  if (shareSnapshot) {
+    return {
+      status: 200,
+      success: true,
+      data: (shareSnapshot.companies as Record<string, unknown>[]).map((company) => {
+        const pattern = String(company.pattern ?? '');
+        return {
+          ...(company as TCompany),
+          tags: pattern
+            ? pattern
+                .split(',')
+                .map((tag) => tag.trim())
+                .filter(Boolean)
+            : [],
+        };
+      }),
+    };
+  }
+
   if (process.env.READ_ONLY === 'true') {
     return { status: 200, success: true, data: [] };
   }

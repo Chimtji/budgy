@@ -3,6 +3,7 @@
 import type { TServerResponse } from '@/service';
 import { isAuthenticated } from '@/service/database/auth/isAuthenticated';
 import { sqlClient } from '@/service/database/auth/server';
+import { getActiveShareSnapshot } from '@/service/database/share/shareContext';
 import { transactionsSnapshot } from '@/service/database/snapshot';
 
 export type TTransaction = {
@@ -29,6 +30,24 @@ type TFilters = {
 export const getAllTransactions = async (
   filters?: TFilters
 ): Promise<TServerResponse<TTransaction[]>> => {
+  const shareSnapshot = await getActiveShareSnapshot();
+  if (shareSnapshot) {
+    let data = (shareSnapshot.transactions as unknown[]).map((t) => ({
+      recipient: '',
+      company_name: null,
+      company_domain: null,
+      ...(t as object),
+    })) as TTransaction[];
+    if (filters?.year) {
+      const y = String(filters.year);
+      data = data.filter((t) => t.date.startsWith(y));
+    }
+    if (filters?.category_key) {
+      data = data.filter((t) => t.category_key === filters.category_key);
+    }
+    return { status: 200, success: true, data };
+  }
+
   if (process.env.READ_ONLY === 'true') {
     let data = (transactionsSnapshot as unknown[]).map((t) => ({
       recipient: '',

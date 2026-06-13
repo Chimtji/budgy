@@ -26,6 +26,7 @@ import {
 } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import { type TTransaction } from '@/service/database/transactions/getAll';
+import { useAppStore } from '@/stores/app/appStore';
 import { useCompaniesStore } from '@/stores/companies/companiesStore';
 import CompanyLogo from '../../companies/_components/CompanyLogo';
 import TransactionDrawer from './TransactionDrawer';
@@ -87,6 +88,7 @@ const TransactionTable: React.FC<TProps> = ({
   showArchived,
 }) => {
   const companies = useCompaniesStore((s) => s.companies);
+  const isReadOnly = useAppStore((s) => s.isReadOnly);
   const [search, setSearch] = useState('');
   const [debouncedSearch] = useDebouncedValue(search, 200);
   const [sortField, setSortField] = useState<TSortField>('date');
@@ -181,7 +183,7 @@ const TransactionTable: React.FC<TProps> = ({
           onChange={(e) => setSearch(e.currentTarget.value)}
           style={{ flex: 1 }}
         />
-        {someChecked && (
+        {!isReadOnly && someChecked && (
           <Group gap="xs">
             <Text size="sm" c="dimmed">
               {checkedIds.size} valgt
@@ -226,20 +228,22 @@ const TransactionTable: React.FC<TProps> = ({
               }}
             >
               <Table.Tr>
-                <Table.Th w={32}>
-                  <Checkbox
-                    size="xs"
-                    checked={allPageChecked}
-                    indeterminate={!allPageChecked && paged.some((t) => checkedIds.has(t.id))}
-                    onChange={toggleAll}
-                  />
-                </Table.Th>
+                {!isReadOnly && (
+                  <Table.Th w={32}>
+                    <Checkbox
+                      size="xs"
+                      checked={allPageChecked}
+                      indeterminate={!allPageChecked && paged.some((t) => checkedIds.has(t.id))}
+                      onChange={toggleAll}
+                    />
+                  </Table.Th>
+                )}
                 <SortableTh field="date">Dato</SortableTh>
                 <Table.Th>Virksomhed</Table.Th>
                 <SortableTh field="amount">Beløb</SortableTh>
                 <SortableTh field="category_key">Kategori</SortableTh>
                 <Table.Th>Segment</Table.Th>
-                <Table.Th />
+                {!isReadOnly && <Table.Th />}
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
@@ -259,12 +263,14 @@ const TransactionTable: React.FC<TProps> = ({
                         : 'var(--mantine-color-default-hover)',
                     }}
                   >
-                    <Table.Td
-                      style={{ borderRadius: '6px 0 0 6px' }}
-                      onClick={(e) => toggleRow(t.id, e)}
-                    >
-                      <Checkbox size="xs" checked={checkedIds.has(t.id)} onChange={() => {}} />
-                    </Table.Td>
+                    {!isReadOnly && (
+                      <Table.Td
+                        style={{ borderRadius: '6px 0 0 6px' }}
+                        onClick={(e) => toggleRow(t.id, e)}
+                      >
+                        <Checkbox size="xs" checked={checkedIds.has(t.id)} onChange={() => {}} />
+                      </Table.Td>
+                    )}
                     <Table.Td>
                       <Text size="sm" c="dimmed" style={{ whiteSpace: 'nowrap' }}>
                         {new Date(t.date).toLocaleDateString('da-DK')}
@@ -322,52 +328,54 @@ const TransactionTable: React.FC<TProps> = ({
                         </Badge>
                       )}
                     </Table.Td>
-                    <Table.Td
-                      style={{ borderRadius: '0 6px 6px 0' }}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Group gap={4} wrap="nowrap">
-                        {showArchived ? (
-                          <>
-                            <ActionIcon
-                              variant="subtle"
-                              color="gray"
-                              size="sm"
-                              onClick={() => onUnarchive(t)}
-                            >
-                              <IconArchiveOff size={14} />
-                            </ActionIcon>
-                            <ActionIcon
-                              variant="subtle"
-                              color="red"
-                              size="sm"
-                              onClick={() => onDelete(t)}
-                            >
-                              <IconTrash size={14} />
-                            </ActionIcon>
-                          </>
-                        ) : (
-                          <>
-                            <ActionIcon
-                              variant="subtle"
-                              color="gray"
-                              size="sm"
-                              onClick={() => onEdit(t)}
-                            >
-                              <IconPencil size={14} />
-                            </ActionIcon>
-                            <ActionIcon
-                              variant="subtle"
-                              color="gray"
-                              size="sm"
-                              onClick={() => onArchive(t)}
-                            >
-                              <IconArchive size={14} />
-                            </ActionIcon>
-                          </>
-                        )}
-                      </Group>
-                    </Table.Td>
+                    {!isReadOnly && (
+                      <Table.Td
+                        style={{ borderRadius: '0 6px 6px 0' }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Group gap={4} wrap="nowrap">
+                          {showArchived ? (
+                            <>
+                              <ActionIcon
+                                variant="subtle"
+                                color="gray"
+                                size="sm"
+                                onClick={() => onUnarchive(t)}
+                              >
+                                <IconArchiveOff size={14} />
+                              </ActionIcon>
+                              <ActionIcon
+                                variant="subtle"
+                                color="red"
+                                size="sm"
+                                onClick={() => onDelete(t)}
+                              >
+                                <IconTrash size={14} />
+                              </ActionIcon>
+                            </>
+                          ) : (
+                            <>
+                              <ActionIcon
+                                variant="subtle"
+                                color="gray"
+                                size="sm"
+                                onClick={() => onEdit(t)}
+                              >
+                                <IconPencil size={14} />
+                              </ActionIcon>
+                              <ActionIcon
+                                variant="subtle"
+                                color="gray"
+                                size="sm"
+                                onClick={() => onArchive(t)}
+                              >
+                                <IconArchive size={14} />
+                              </ActionIcon>
+                            </>
+                          )}
+                        </Group>
+                      </Table.Td>
+                    )}
                   </Table.Tr>
                 );
               })}

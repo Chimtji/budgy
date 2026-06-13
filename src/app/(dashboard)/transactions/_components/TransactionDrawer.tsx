@@ -18,6 +18,7 @@ import { showErrorNotification, showSuccessNotification } from '@/notifications/
 import { matchesPattern, type TRule } from '@/service/categorization/engine';
 import { getAllRules } from '@/service/database/rules/getAll';
 import { type TTransaction } from '@/service/database/transactions/getAll';
+import { useAppStore } from '@/stores/app/appStore';
 import { useCategoriesStore } from '@/stores/categories/categoriesStore';
 import { useCompaniesStore } from '@/stores/companies/companiesStore';
 import { useTransactionsStore } from '@/stores/transactions/transactionsStore';
@@ -50,6 +51,7 @@ const matchesRule = (rule: TRule, description: string, recipient: string): boole
   matchesPattern(rule.pattern, `${description} ${recipient}`);
 
 const TransactionDrawer: React.FC<TProps> = ({ transaction: t, categories, segments, onClose }) => {
+  const isReadOnly = useAppStore((s) => s.isReadOnly);
   const companies = useCompaniesStore((s) => s.companies);
   const addCompany = useCompaniesStore((s) => s.addCompany);
   const updateTransaction = useTransactionsStore((s) => s.updateTransaction);
@@ -70,8 +72,9 @@ const TransactionDrawer: React.FC<TProps> = ({ transaction: t, categories, segme
   };
 
   useEffect(() => {
+    if (isReadOnly) return;
     fetchRules();
-  }, [t?.id]);
+  }, [t?.id, isReadOnly]);
 
   useEffect(() => {
     setPendingCategory(t?.category_key ?? null);
@@ -90,6 +93,7 @@ const TransactionDrawer: React.FC<TProps> = ({ transaction: t, categories, segme
     pendingCompany !== (t?.company_name ?? null);
 
   const handleSave = async () => {
+    if (isReadOnly) return;
     if (!t) return;
     setIsSaving(true);
     try {
@@ -130,7 +134,7 @@ const TransactionDrawer: React.FC<TProps> = ({ transaction: t, categories, segme
 
   return (
     <>
-      {showAddCompany && (
+      {!isReadOnly && showAddCompany && (
         <CompanyForm
           categories={allCategories}
           segments={allSegments}
@@ -193,10 +197,13 @@ const TransactionDrawer: React.FC<TProps> = ({ transaction: t, categories, segme
                   searchable
                   size="sm"
                   style={{ flex: 1 }}
+                  disabled={isReadOnly}
                 />
-                <ActionIcon variant="light" size="sm" onClick={() => setShowAddCompany(true)}>
-                  <IconPlus size={14} stroke={1.5} />
-                </ActionIcon>
+                {!isReadOnly && (
+                  <ActionIcon variant="light" size="sm" onClick={() => setShowAddCompany(true)}>
+                    <IconPlus size={14} stroke={1.5} />
+                  </ActionIcon>
+                )}
               </Group>
             </Field>
 
@@ -211,6 +218,7 @@ const TransactionDrawer: React.FC<TProps> = ({ transaction: t, categories, segme
                 placeholder="Ingen kategori"
                 clearable
                 size="sm"
+                disabled={isReadOnly}
               />
             </Field>
 
@@ -221,12 +229,12 @@ const TransactionDrawer: React.FC<TProps> = ({ transaction: t, categories, segme
                 onChange={setPendingSegment}
                 placeholder="Intet segment"
                 clearable
-                disabled={!pendingCategory || segmentOptions.length === 0}
+                disabled={isReadOnly || !pendingCategory || segmentOptions.length === 0}
                 size="sm"
               />
             </Field>
 
-            {isDirty && (
+            {!isReadOnly && isDirty && (
               <Button size="sm" onClick={handleSave} loading={isSaving}>
                 Gem ændringer
               </Button>

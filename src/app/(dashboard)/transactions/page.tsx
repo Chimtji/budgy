@@ -7,6 +7,7 @@ import { Badge, Box, Button, Group, Skeleton, Stack, Text, Title } from '@mantin
 import { showErrorNotification, showSuccessNotification } from '@/notifications/feedback';
 import { bulkUpdateTransactions } from '@/service/database/transactions/bulkUpdate';
 import { type TTransaction } from '@/service/database/transactions/getAll';
+import { useAppStore } from '@/stores/app/appStore';
 import { useCategoriesStore } from '@/stores/categories/categoriesStore';
 import { useTransactionsStore } from '@/stores/transactions/transactionsStore';
 import BulkEditModal from './_components/BulkEditModal';
@@ -17,6 +18,7 @@ import TransactionTable from './_components/TransactionTable';
 const CONTENT_PADDING = 'var(--mantine-spacing-xl)';
 
 const TransactionsPage: React.FC = () => {
+  const isReadOnly = useAppStore((s) => s.isReadOnly);
   const {
     transactions,
     isLoading,

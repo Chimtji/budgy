@@ -20,6 +20,7 @@ import {
   UnstyledButton,
 } from '@mantine/core';
 import type { TTransaction } from '@/service/database/transactions/getAll';
+import { useAppStore } from '@/stores/app/appStore';
 import { useCategoriesStore } from '@/stores/categories/categoriesStore';
 import { useCompaniesStore } from '@/stores/companies/companiesStore';
 import { useTransactionsStore } from '@/stores/transactions/transactionsStore';
@@ -49,6 +50,7 @@ const formatDKK = (n: number) =>
   new Intl.NumberFormat('da-DK', { style: 'currency', currency: 'DKK' }).format(n);
 
 export default function CategoriesListPage() {
+  const isReadOnly = useAppStore((s) => s.isReadOnly);
   const {
     categories,
     segments,
@@ -135,18 +137,20 @@ export default function CategoriesListPage() {
           flexDirection: 'column',
         }}
       >
-        <Button
-          leftSection={<IconPlus size={16} />}
-          variant="light"
-          size="xs"
-          mb="xs"
-          onClick={() => {
-            setEditingCategory(undefined);
-            setShowCategoryForm(true);
-          }}
-        >
-          Ny kategori
-        </Button>
+        {!isReadOnly && (
+          <Button
+            leftSection={<IconPlus size={16} />}
+            variant="light"
+            size="xs"
+            mb="xs"
+            onClick={() => {
+              setEditingCategory(undefined);
+              setShowCategoryForm(true);
+            }}
+          >
+            Ny kategori
+          </Button>
+        )}
         <ScrollArea style={{ flex: 1 }}>
           <Stack gap={4}>
             {categories
@@ -194,31 +198,33 @@ export default function CategoriesListPage() {
                           {c.label}
                         </Text>
                       </Group>
-                      <Group gap={2} wrap="nowrap">
-                        <ActionIcon
-                          variant="subtle"
-                          color="gray"
-                          size="xs"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setEditingCategory(c);
-                            setShowCategoryForm(true);
-                          }}
-                        >
-                          <IconPencil size={12} />
-                        </ActionIcon>
-                        <ActionIcon
-                          variant="subtle"
-                          color="red"
-                          size="xs"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            removeCategory(c.key);
-                          }}
-                        >
-                          <IconTrash size={12} />
-                        </ActionIcon>
-                      </Group>
+                      {!isReadOnly && (
+                        <Group gap={2} wrap="nowrap">
+                          <ActionIcon
+                            variant="subtle"
+                            color="gray"
+                            size="xs"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingCategory(c);
+                              setShowCategoryForm(true);
+                            }}
+                          >
+                            <IconPencil size={12} />
+                          </ActionIcon>
+                          <ActionIcon
+                            variant="subtle"
+                            color="red"
+                            size="xs"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeCategory(c.key);
+                            }}
+                          >
+                            <IconTrash size={12} />
+                          </ActionIcon>
+                        </Group>
+                      )}
                     </Group>
                   </Box>
                 );
@@ -239,15 +245,17 @@ export default function CategoriesListPage() {
       >
         {selectedCategory ? (
           <>
-            <Button
-              leftSection={<IconPlus size={16} />}
-              variant="light"
-              size="xs"
-              mb="xs"
-              onClick={() => handleAddSegment(selectedCategory)}
-            >
-              Nyt segment
-            </Button>
+            {!isReadOnly && (
+              <Button
+                leftSection={<IconPlus size={16} />}
+                variant="light"
+                size="xs"
+                mb="xs"
+                onClick={() => handleAddSegment(selectedCategory)}
+              >
+                Nyt segment
+              </Button>
+            )}
             <ScrollArea style={{ flex: 1 }}>
               <Stack gap={4}>
                 {/* "Vis alle" option */}
@@ -314,30 +322,34 @@ export default function CategoriesListPage() {
                           <Badge variant="light" color="gray" size="xs" radius="sm">
                             {count}
                           </Badge>
-                          <ActionIcon
-                            variant="subtle"
-                            color="gray"
-                            size="xs"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setEditingSegment(s);
-                              setSegmentCategoryKey(s.category_key);
-                              setShowSegmentForm(true);
-                            }}
-                          >
-                            <IconPencil size={12} />
-                          </ActionIcon>
-                          <ActionIcon
-                            variant="subtle"
-                            color="red"
-                            size="xs"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              removeSegment(s.id);
-                            }}
-                          >
-                            <IconTrash size={12} />
-                          </ActionIcon>
+                          {!isReadOnly && (
+                            <>
+                              <ActionIcon
+                                variant="subtle"
+                                color="gray"
+                                size="xs"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingSegment(s);
+                                  setSegmentCategoryKey(s.category_key);
+                                  setShowSegmentForm(true);
+                                }}
+                              >
+                                <IconPencil size={12} />
+                              </ActionIcon>
+                              <ActionIcon
+                                variant="subtle"
+                                color="red"
+                                size="xs"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  removeSegment(s.id);
+                                }}
+                              >
+                                <IconTrash size={12} />
+                              </ActionIcon>
+                            </>
+                          )}
                         </Group>
                       </Group>
                     </UnstyledButton>
@@ -496,7 +508,7 @@ export default function CategoriesListPage() {
       </Paper>
 
       {/* Forms */}
-      {showCategoryForm && (
+      {!isReadOnly && showCategoryForm && (
         <CategoryForm
           category={editingCategory}
           onSave={(data) => {
@@ -509,7 +521,7 @@ export default function CategoriesListPage() {
           }}
         />
       )}
-      {showSegmentForm && (
+      {!isReadOnly && showSegmentForm && (
         <SegmentForm
           segment={editingSegment}
           categoryKey={segmentCategoryKey}

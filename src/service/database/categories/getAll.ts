@@ -3,6 +3,7 @@
 import type { TServerResponse } from '@/service';
 import { isAuthenticated } from '@/service/database/auth/isAuthenticated';
 import { sqlClient } from '@/service/database/auth/server';
+import { getActiveShareSnapshot } from '@/service/database/share/shareContext';
 import { categoriesSnapshot } from '@/service/database/snapshot';
 
 export type TCategory = {
@@ -15,6 +16,11 @@ export type TCategory = {
 };
 
 export const getAllCategories = async (): Promise<TServerResponse<TCategory[]>> => {
+  const shareSnapshot = await getActiveShareSnapshot();
+  if (shareSnapshot) {
+    return { status: 200, success: true, data: shareSnapshot.categories as TCategory[] };
+  }
+
   if (process.env.READ_ONLY === 'true') {
     return { status: 200, success: true, data: categoriesSnapshot as TCategory[] };
   }

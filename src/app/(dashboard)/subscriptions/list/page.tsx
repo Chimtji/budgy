@@ -51,6 +51,7 @@ import {
   type TDetectedSubscription,
   type TSubscriptionCadence,
 } from '@/service/subscriptions/detector';
+import { useAppStore } from '@/stores/app/appStore';
 import { useCategoriesStore } from '@/stores/categories/categoriesStore';
 import { useSubscriptionsStore } from '@/stores/subscriptions/subscriptionsStore';
 import { useTransactionsStore } from '@/stores/transactions/transactionsStore';
@@ -272,6 +273,7 @@ const filterTabStyle = (active: boolean): React.CSSProperties => ({
 });
 
 export default function SubscriptionsListPage() {
+  const isReadOnly = useAppStore((s) => s.isReadOnly);
   const {
     matchers,
     ignoredDetectionKeys,
@@ -831,7 +833,8 @@ export default function SubscriptionsListPage() {
                               </Group>
                             </Stack>
                           </Group>
-                          {filter === 'confirmed' &&
+                          {!isReadOnly &&
+                            filter === 'confirmed' &&
                             (isActive || hoveredKey === sub.key || !!sub.note) && (
                               <Group gap={4} wrap="nowrap" onClick={(e) => e.stopPropagation()}>
                                 <HoverCard
@@ -895,7 +898,7 @@ export default function SubscriptionsListPage() {
                                 </ActionIcon>
                               </Group>
                             )}
-                          {filter === 'detected' && (
+                          {!isReadOnly && filter === 'detected' && (
                             <ActionIcon
                               variant="subtle"
                               color="gray"
@@ -910,7 +913,7 @@ export default function SubscriptionsListPage() {
                               <IconEyeOff size={14} stroke={1.5} />
                             </ActionIcon>
                           )}
-                          {filter === 'ignored' && (
+                          {!isReadOnly && filter === 'ignored' && (
                             <ActionIcon
                               variant="subtle"
                               color="teal"
@@ -1064,7 +1067,7 @@ export default function SubscriptionsListPage() {
                       </Group>
                     </Stack>
                   </Group>
-                  {filter === 'confirmed' && selectedSub.manualMatcherId && (
+                  {!isReadOnly && filter === 'confirmed' && selectedSub.manualMatcherId && (
                     <Group gap={6}>
                       <Button
                         leftSection={<IconPlus size={13} stroke={1.5} />}
@@ -1103,7 +1106,7 @@ export default function SubscriptionsListPage() {
                       </HoverCard>
                     </Group>
                   )}
-                  {filter === 'detected' && (
+                  {!isReadOnly && filter === 'detected' && (
                     <Group gap="xs">
                       <Button
                         leftSection={<IconPlus size={13} stroke={1.5} />}
@@ -1138,7 +1141,7 @@ export default function SubscriptionsListPage() {
                       </Button>
                     </Group>
                   )}
-                  {filter === 'ignored' && (
+                  {!isReadOnly && filter === 'ignored' && (
                     <Button
                       leftSection={<IconArrowBack size={14} stroke={1.5} />}
                       variant="light"
@@ -1355,7 +1358,7 @@ export default function SubscriptionsListPage() {
                     );
                   })}
                 </Stack>
-                {splitSelection.length > 0 && (
+                {!isReadOnly && splitSelection.length > 0 && (
                   <Button
                     leftSection={<IconScissors size={14} stroke={1.5} />}
                     variant="light"
@@ -1379,97 +1382,99 @@ export default function SubscriptionsListPage() {
         onClose={() => setDrawerTransaction(null)}
       />
 
-      <Modal
-        opened={splitModalOpen}
-        onClose={() => {
-          setSplitModalOpen(false);
-          setSplitPreview(null);
-        }}
-        title={<Title order={4}>Opdel som separat abonnement</Title>}
-        centered
-        size="sm"
-        zIndex={300}
-      >
-        <Stack gap="md" pb="sm">
-          <TextInput
-            label="Navn"
-            value={splitName}
-            onChange={(e) => setSplitName(e.currentTarget.value)}
-          />
-          {splitPreview && (
-            <Stack gap="xs">
-              <Group gap="xs">
-                <Badge variant="light" color="gray" radius="sm" size="sm">
-                  {CADENCE_LABELS[splitPreview.cadence]}
-                </Badge>
-                <Text size="sm" fw={500}>
-                  {formatDKK(splitPreview.estimatedMonthly)}/md. (estimeret)
+      {!isReadOnly && (
+        <Modal
+          opened={splitModalOpen}
+          onClose={() => {
+            setSplitModalOpen(false);
+            setSplitPreview(null);
+          }}
+          title={<Title order={4}>Opdel som separat abonnement</Title>}
+          centered
+          size="sm"
+          zIndex={300}
+        >
+          <Stack gap="md" pb="sm">
+            <TextInput
+              label="Navn"
+              value={splitName}
+              onChange={(e) => setSplitName(e.currentTarget.value)}
+            />
+            {splitPreview && (
+              <Stack gap="xs">
+                <Group gap="xs">
+                  <Badge variant="light" color="gray" radius="sm" size="sm">
+                    {CADENCE_LABELS[splitPreview.cadence]}
+                  </Badge>
+                  <Text size="sm" fw={500}>
+                    {formatDKK(splitPreview.estimatedMonthly)}/md. (estimeret)
+                  </Text>
+                </Group>
+                <NumberInput
+                  label="Tolerance (%)"
+                  description={(() => {
+                    const amounts = splitPreview.transactions.map((t) => Math.abs(t.amount));
+                    const avg = amounts.reduce((s, v) => s + v, 0) / (amounts.length || 1);
+                    const tol = (typeof splitTolerance === 'number' ? splitTolerance : 10) / 100;
+                    return `${formatDKK(Math.floor(avg * (1 - tol)))} – ${formatDKK(Math.ceil(avg * (1 + tol)))}  matcher fremtidige opkrævninger inden for dette interval`;
+                  })()}
+                  value={splitTolerance}
+                  onChange={setSplitTolerance}
+                  min={0}
+                  max={100}
+                  suffix=" %"
+                  decimalScale={0}
+                />
+                <Text
+                  size="xs"
+                  c="dimmed"
+                  fw={600}
+                  tt="uppercase"
+                  style={{ letterSpacing: '0.05em' }}
+                >
+                  {splitPreview.transactions.length} posteringer
                 </Text>
-              </Group>
-              <NumberInput
-                label="Tolerance (%)"
-                description={(() => {
-                  const amounts = splitPreview.transactions.map((t) => Math.abs(t.amount));
-                  const avg = amounts.reduce((s, v) => s + v, 0) / (amounts.length || 1);
-                  const tol = (typeof splitTolerance === 'number' ? splitTolerance : 10) / 100;
-                  return `${formatDKK(Math.floor(avg * (1 - tol)))} – ${formatDKK(Math.ceil(avg * (1 + tol)))}  matcher fremtidige opkrævninger inden for dette interval`;
-                })()}
-                value={splitTolerance}
-                onChange={setSplitTolerance}
-                min={0}
-                max={100}
-                suffix=" %"
-                decimalScale={0}
-              />
-              <Text
-                size="xs"
-                c="dimmed"
-                fw={600}
-                tt="uppercase"
-                style={{ letterSpacing: '0.05em' }}
-              >
-                {splitPreview.transactions.length} posteringer
-              </Text>
-              <Stack gap={4}>
-                {splitPreview.transactions.map((t) => (
-                  <Group
-                    key={t.id}
-                    justify="space-between"
-                    wrap="nowrap"
-                    px="sm"
-                    py={6}
-                    style={{
-                      borderRadius: 6,
-                      background: 'var(--mantine-color-default-hover)',
-                    }}
-                  >
-                    <Stack gap={0} style={{ minWidth: 0, flex: 1 }}>
-                      <Text size="xs" fw={500} truncate>
-                        {t.description}
+                <Stack gap={4}>
+                  {splitPreview.transactions.map((t) => (
+                    <Group
+                      key={t.id}
+                      justify="space-between"
+                      wrap="nowrap"
+                      px="sm"
+                      py={6}
+                      style={{
+                        borderRadius: 6,
+                        background: 'var(--mantine-color-default-hover)',
+                      }}
+                    >
+                      <Stack gap={0} style={{ minWidth: 0, flex: 1 }}>
+                        <Text size="xs" fw={500} truncate>
+                          {t.description}
+                        </Text>
+                        <Text size="xs" c="dimmed">
+                          {formatDate(t.date)}
+                        </Text>
+                      </Stack>
+                      <Text size="xs" fw={600} style={{ whiteSpace: 'nowrap' }}>
+                        {formatDKK(Math.abs(t.amount))}
                       </Text>
-                      <Text size="xs" c="dimmed">
-                        {formatDate(t.date)}
-                      </Text>
-                    </Stack>
-                    <Text size="xs" fw={600} style={{ whiteSpace: 'nowrap' }}>
-                      {formatDKK(Math.abs(t.amount))}
-                    </Text>
-                  </Group>
-                ))}
+                    </Group>
+                  ))}
+                </Stack>
               </Stack>
-            </Stack>
-          )}
-          <Button
-            leftSection={<IconScissors size={14} stroke={1.5} />}
-            onClick={handleSplitCreate}
-            disabled={!splitName.trim() || !splitPreview}
-          >
-            Opdel
-          </Button>
-        </Stack>
-      </Modal>
+            )}
+            <Button
+              leftSection={<IconScissors size={14} stroke={1.5} />}
+              onClick={handleSplitCreate}
+              disabled={!splitName.trim() || !splitPreview}
+            >
+              Opdel
+            </Button>
+          </Stack>
+        </Modal>
+      )}
 
-      {selectedSub && (
+      {!isReadOnly && selectedSub && (
         <Modal
           opened={missingModalOpen}
           onClose={() => setMissingModalOpen(false)}

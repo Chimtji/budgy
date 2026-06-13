@@ -6,7 +6,7 @@ type TProps = {
 
 const SharedViewPage = async ({ params }: TProps) => {
   const { id } = await params;
-  redirect(`/view/${id}/overview`);
+  redirect(`/view/${id}/overview/general`);
 };
 
 export default SharedViewPage;

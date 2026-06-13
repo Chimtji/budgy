@@ -15,6 +15,7 @@ import {
   Title,
 } from '@mantine/core';
 import { getAllTransactions } from '@/service/database/transactions/getAll';
+import { useAppStore } from '@/stores/app/appStore';
 import { useCategoriesStore } from '@/stores/categories/categoriesStore';
 import { resolveGoalForMonth, useGoalsStore } from '@/stores/goals/goalsStore';
 import GoalCard from './_components/GoalCard';
@@ -56,6 +57,7 @@ const nowYM = () => {
 const slotKey = (category_key: string, segment_key: string) => `${category_key}:${segment_key}`;
 
 export default function GoalsPage() {
+  const isReadOnly = useAppStore((s) => s.isReadOnly);
   const { categories, segments } = useCategoriesStore(
     useShallow((s) => ({ categories: s.categories, segments: s.segments }))
   );
@@ -188,16 +190,18 @@ export default function GoalsPage() {
         </Stack>
         <Group gap="sm">
           <Select data={monthOptions} value={month} onChange={(v) => v && setMonth(v)} w={170} />
-          <Button
-            leftSection={<IconPlus size={16} />}
-            variant="light"
-            onClick={() => {
-              setEditGoalId(null);
-              setModalOpen(true);
-            }}
-          >
-            Tilføj mål
-          </Button>
+          {!isReadOnly && (
+            <Button
+              leftSection={<IconPlus size={16} />}
+              variant="light"
+              onClick={() => {
+                setEditGoalId(null);
+                setModalOpen(true);
+              }}
+            >
+              Tilføj mål
+            </Button>
+          )}
         </Group>
       </Group>
 
@@ -254,16 +258,18 @@ export default function GoalsPage() {
         </SimpleGrid>
       )}
 
-      <GoalModal
-        opened={modalOpen}
-        onClose={() => setModalOpen(false)}
-        categories={categories}
-        segments={segments}
-        editValues={editValues}
-        history={editHistory}
-        currentMonth={month}
-        onSave={handleSave}
-      />
+      {!isReadOnly && (
+        <GoalModal
+          opened={modalOpen}
+          onClose={() => setModalOpen(false)}
+          categories={categories}
+          segments={segments}
+          editValues={editValues}
+          history={editHistory}
+          currentMonth={month}
+          onSave={handleSave}
+        />
+      )}
     </Stack>
   );
 }

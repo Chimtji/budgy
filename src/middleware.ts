@@ -7,7 +7,23 @@ export const middleware = (req: NextRequest) => {
 
   // Allow public routes
   if (pathname.startsWith('/view/') || pathname.startsWith('/api/') || pathname === '/') {
-    return NextResponse.next();
+    const response = NextResponse.next();
+
+    if (pathname.startsWith('/view/')) {
+      const shareId = pathname.split('/')[2];
+      if (shareId) {
+        response.cookies.set({
+          name: 'budgy-share-id',
+          value: shareId,
+          httpOnly: true,
+          sameSite: 'lax',
+          secure: process.env.NODE_ENV === 'production',
+          path: `/view/${shareId}`,
+        });
+      }
+    }
+
+    return response;
   }
 
   return NextResponse.redirect(new URL('/', req.url));

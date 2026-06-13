@@ -3,6 +3,7 @@
 import type { TServerResponse } from '@/service';
 import { isAuthenticated } from '@/service/database/auth/isAuthenticated';
 import { sqlClient } from '@/service/database/auth/server';
+import { getActiveShareSnapshot } from '@/service/database/share/shareContext';
 
 export type TSubscriptionMatcher = {
   id: string;
@@ -20,6 +21,15 @@ export type TSubscriptionMatcher = {
 export const getAllSubscriptionMatchers = async (): Promise<
   TServerResponse<TSubscriptionMatcher[]>
 > => {
+  const shareSnapshot = await getActiveShareSnapshot();
+  if (shareSnapshot) {
+    return {
+      status: 200,
+      success: true,
+      data: shareSnapshot.subscriptions as TSubscriptionMatcher[],
+    };
+  }
+
   const auth = await isAuthenticated();
   if (!auth.success) return auth;
 

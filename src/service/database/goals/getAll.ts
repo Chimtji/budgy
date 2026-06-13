@@ -3,6 +3,7 @@
 import type { TServerResponse } from '@/service';
 import { isAuthenticated } from '@/service/database/auth/isAuthenticated';
 import { sqlClient } from '@/service/database/auth/server';
+import { getActiveShareSnapshot } from '@/service/database/share/shareContext';
 
 export type TGoal = {
   id: string;
@@ -16,6 +17,11 @@ export type TGoal = {
 
 /** Returns all goal entries for the user (full history across all categories). */
 export const getAllGoals = async (): Promise<TServerResponse<TGoal[]>> => {
+  const shareSnapshot = await getActiveShareSnapshot();
+  if (shareSnapshot) {
+    return { status: 200, success: true, data: shareSnapshot.goals as TGoal[] };
+  }
+
   const auth = await isAuthenticated();
   if (!auth.success) return auth;
 
