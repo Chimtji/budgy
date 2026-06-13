@@ -25,7 +25,18 @@ export const POST = async (
       }
     }
 
-    return NextResponse.json({ success: true });
+    const response = NextResponse.json({ success: true });
+    response.cookies.set({
+      name: `budgy-share-auth-${shareId}`,
+      value: '1',
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60 * 24 * 30,
+      path: `/view/${shareId}`,
+    });
+
+    return response;
   } catch {
     return NextResponse.json({ error: 'Kunne ikke verificere deling' }, { status: 500 });
   }
