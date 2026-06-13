@@ -37,7 +37,10 @@ export const getShareList = async (): Promise<TShareList> => {
 export const addShareToList = async (entry: TShareListEntry): Promise<void> => {
   const list_data = await getShareList();
   list_data.push(entry);
-  await put(`share-list:${USERID}`, JSON.stringify(list_data), { access: 'private', allowOverwrite: true });
+  await put(`share-list:${USERID}`, JSON.stringify(list_data), {
+    access: 'public',
+    allowOverwrite: true,
+  });
 };
 
 export const updateShareInList = async (
@@ -48,7 +51,10 @@ export const updateShareInList = async (
   const index = list_data.findIndex((s) => s.shareId === shareId);
   if (index >= 0) {
     list_data[index] = { ...list_data[index], ...updates };
-    await put(`share-list:${USERID}`, JSON.stringify(list_data), { access: 'private', allowOverwrite: true });
+    await put(`share-list:${USERID}`, JSON.stringify(list_data), {
+      access: 'public',
+      allowOverwrite: true,
+    });
   }
 };
 
@@ -82,15 +88,15 @@ export const putShareMetadata = async (
   shareId: string,
   metadata: TShareMetadata
 ): Promise<void> => {
-  await put(`share-meta:${shareId}`, JSON.stringify(metadata), { 
+  await put(`share-meta:${shareId}`, JSON.stringify(metadata), {
     access: 'public',
-    allowOverwrite: true 
+    allowOverwrite: true,
   });
 };
 
 export const isShareValid = async (shareId: string): Promise<boolean> => {
   console.log('[isShareValid] Checking shareId:', shareId);
-  
+
   // Check if metadata blob exists
   const metadata = await getShareMetadata(shareId);
   console.log('[isShareValid] metadata:', metadata);
@@ -98,13 +104,13 @@ export const isShareValid = async (shareId: string): Promise<boolean> => {
     console.log('[isShareValid] No metadata found - returning false');
     return false;
   }
-  
+
   // Check if revoked
   if (metadata.status === 'revoked') {
     console.log('[isShareValid] Status is revoked - returning false');
     return false;
   }
-  
+
   // Check expiration
   if (metadata.expiresAt) {
     const expiresAt = new Date(metadata.expiresAt);
@@ -113,7 +119,7 @@ export const isShareValid = async (shareId: string): Promise<boolean> => {
       return false;
     }
   }
-  
+
   console.log('[isShareValid] Share is valid - returning true');
   return true;
 };
