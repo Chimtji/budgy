@@ -343,6 +343,7 @@ const ImportPreviewRow: React.FC<TProps> = React.memo(
         )}
         {showNewCompany && (
           <CompanyForm
+            transaction={row}
             categories={categories}
             segments={segments}
             onSave={handleSaveNewCompany}
