@@ -141,10 +141,16 @@ const RulesPage: React.FC = () => {
     setViewing(null);
   };
 
+  const getMatchCount = (pattern: string) =>
+    transactions.filter((t) => matchesPattern(pattern, `${t.description} ${t.recipient}`)).length;
+
+  const getMatchedTransactions = (pattern: string) =>
+    transactions.filter((t) => matchesPattern(pattern, `${t.description} ${t.recipient}`));
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     const base = q ? rules.filter((r) => r.pattern.toLowerCase().includes(q)) : rules;
-    return [...base].sort((a, b) => {
+    return [...base]?.sort((a, b) => {
       let diff = 0;
       if (sortField === 'pattern') diff = a.pattern.localeCompare(b.pattern, 'da');
       else if (sortField === 'category_key')
@@ -155,12 +161,6 @@ const RulesPage: React.FC = () => {
       return sortDir === 'asc' ? diff : -diff;
     });
   }, [rules, search, sortField, sortDir, transactions]);
-
-  const getMatchCount = (pattern: string) =>
-    transactions.filter((t) => matchesPattern(pattern, `${t.description} ${t.recipient}`)).length;
-
-  const getMatchedTransactions = (pattern: string) =>
-    transactions.filter((t) => matchesPattern(pattern, `${t.description} ${t.recipient}`));
 
   return (
     <Box

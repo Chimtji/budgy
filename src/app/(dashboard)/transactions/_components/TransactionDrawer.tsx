@@ -24,6 +24,7 @@ import { useCompaniesStore } from '@/stores/companies/companiesStore';
 import { useTransactionsStore } from '@/stores/transactions/transactionsStore';
 import CompanyForm from '../../companies/_components/CompanyForm';
 import CompanyLogo from '../../companies/_components/CompanyLogo';
+import { TParsedRow } from '../../import/page';
 
 type TCategory = { key: string; label: string; color: string };
 type TSegment = { key: string; category_key: string; label: string };
@@ -136,18 +137,20 @@ const TransactionDrawer: React.FC<TProps> = ({ transaction: t, categories, segme
     <>
       {!isReadOnly && showAddCompany && (
         <CompanyForm
+          transaction={
+            t
+              ? ({
+                  ...t,
+                  company_id: pendingCompany,
+                  balance: t.amount || 0,
+                  supp_text: '',
+                  auto_matched: false,
+                  duplicate: false,
+                } as TParsedRow)
+              : null
+          }
           categories={allCategories}
           segments={allSegments}
-          transactionContext={
-            t
-              ? {
-                  date: t.date,
-                  amount: t.amount,
-                  description: t.description,
-                  recipient: t.recipient,
-                }
-              : undefined
-          }
           onSave={handleAddCompany}
           onClose={() => setShowAddCompany(false)}
         />
@@ -210,16 +213,7 @@ const TransactionDrawer: React.FC<TProps> = ({ transaction: t, categories, segme
                   disabled={isReadOnly}
                 />
                 {!isReadOnly && (
-                  <ActionIcon
-                    variant="light"
-                    size="sm"
-                    onClick={() => {
-                      if (typeof window !== 'undefined') {
-                        window.__budgyPendingCompanyTransaction = t;
-                      }
-                      setShowAddCompany(true);
-                    }}
-                  >
+                  <ActionIcon variant="light" size="sm" onClick={() => setShowAddCompany(true)}>
                     <IconPlus size={14} stroke={1.5} />
                   </ActionIcon>
                 )}
