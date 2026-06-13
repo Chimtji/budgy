@@ -138,6 +138,16 @@ const TransactionDrawer: React.FC<TProps> = ({ transaction: t, categories, segme
         <CompanyForm
           categories={allCategories}
           segments={allSegments}
+          transactionContext={
+            t
+              ? {
+                  date: t.date,
+                  amount: t.amount,
+                  description: t.description,
+                  recipient: t.recipient,
+                }
+              : undefined
+          }
           onSave={handleAddCompany}
           onClose={() => setShowAddCompany(false)}
         />
@@ -200,7 +210,16 @@ const TransactionDrawer: React.FC<TProps> = ({ transaction: t, categories, segme
                   disabled={isReadOnly}
                 />
                 {!isReadOnly && (
-                  <ActionIcon variant="light" size="sm" onClick={() => setShowAddCompany(true)}>
+                  <ActionIcon
+                    variant="light"
+                    size="sm"
+                    onClick={() => {
+                      if (typeof window !== 'undefined') {
+                        window.__budgyPendingCompanyTransaction = t;
+                      }
+                      setShowAddCompany(true);
+                    }}
+                  >
                     <IconPlus size={14} stroke={1.5} />
                   </ActionIcon>
                 )}

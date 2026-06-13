@@ -345,6 +345,14 @@ const ImportPreviewRow: React.FC<TProps> = React.memo(
           <CompanyForm
             categories={categories}
             segments={segments}
+            transactionContext={{
+              date: row.date,
+              amount: row.amount,
+              description: row.description,
+              recipient: row.recipient,
+              balance: row.balance,
+              supp_text: row.supp_text,
+            }}
             onSave={handleSaveNewCompany}
             onClose={() => setShowNewCompany(false)}
           />
